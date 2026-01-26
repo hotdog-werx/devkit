@@ -22,6 +22,6 @@ jobs:
   checks-complete:
     needs: [local-check]
     if: always()
-    uses: hotdog-werx/checks-complete-action/.github/worksflows/verify.yaml@v0
+    uses: hotdog-werx/checks-complete-action/.github/workflows/verify.yaml@v0
     with:
       needs-jobs: '${{ toJSON(needs) }}'
