@@ -1,0 +1,13 @@
+[tool.poe.tasks]
+check-dprint.help = "run dprint checks"
+check-dprint.cmd = "mise exec -- tbelt check dprint"
+
+check-repolish.help = "run repolish checks"
+check-repolish.cmd = "mise exec -- repolish --check"
+
+# Sequence should be overridden by other devkit configs to add more checks
+ci-checks.help = "run all CI checks"
+ci-checks.sequence = [
+  "check-dprint",
+  "check-repolish",
+]

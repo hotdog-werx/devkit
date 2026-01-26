@@ -1,0 +1,18 @@
+[tool.poe.env]
+CI.default = "false"
+
+## Tasks definitions
+[tool.poe.tasks]
+## Mise setup task
+setup.help = "setup dev environment"
+setup.sequence = [
+  { expr = "'Ready!'" },
+]
+
+## No-op task to skip setup in CI
+setup-hook.help = "run setup in non-CI environments"
+setup-hook.control = { expr = "${CI}.lower()" }
+setup-hook.switch = [
+  { case = "true", expr = "'skip dev setup in CI'" },
+  { case = "__default__", ref = "setup" },
+]

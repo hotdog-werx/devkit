@@ -1,0 +1,32 @@
+name: _ci-checks
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        required: true
+        type: string
+
+permissions:
+  contents: read # for actions/checkout
+  packages: read # to read Github packages
+
+jobs:
+  checks:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(inputs.runs-on) }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: mise
+        uses: jdx/mise-action@v3
+
+      - name: check-dprint
+        run: poe check-dprint
+
+      - name: check-repolish
+        run: poe check-repolish

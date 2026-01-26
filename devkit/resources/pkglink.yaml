@@ -1,0 +1,3 @@
+symlinks:
+  - source: configs/.editorconfig
+    target: .editorconfig

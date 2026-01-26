@@ -1,0 +1,6 @@
+[tool.poe.tasks]
+format-dprint.help = "format with dprint"
+format-dprint.cmd = "mise exec -- tbelt format dprint"
+
+repolish.help = "run repolish to format repository files"
+repolish.cmd = "mise exec -- repolish"

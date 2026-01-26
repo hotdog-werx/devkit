@@ -1,0 +1,6 @@
+[tool.poe]
+include = [
+  ".pkglink/.devkit/poe/dev-setup.toml",
+  ".pkglink/.devkit/poe/ci-checks.toml",
+  ".pkglink/.devkit/poe/formatters.toml",
+]

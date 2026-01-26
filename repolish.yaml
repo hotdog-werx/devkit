@@ -1,0 +1,10 @@
+directories:
+  - ./.pkglink/.devkit/templates
+
+post_process:
+  - poe format-dprint
+
+context:
+  devkits:
+    - - name: local
+        runs_on: "['ubuntu-latest']"

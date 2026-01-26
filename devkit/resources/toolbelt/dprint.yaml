@@ -1,0 +1,30 @@
+profiles:
+  dprint:
+    extensions: ['.toml', '.md', '.json', '.yaml', '.yml']
+    check_tools:
+      - name: dprint
+        command: mise
+        args:
+          - exec
+          - --
+          - dprint
+          - --config
+          - ${TB_DPRINT_CONFIG:dprint.json}
+          - check
+        file_handling_mode: batch
+        description: check code formatting with dprint
+    format_tools:
+      - name: dprint
+        command: mise
+        args:
+          - exec
+          - --
+          - dprint
+          - --config
+          - ${TB_DPRINT_CONFIG:dprint.json}
+          - fmt
+        file_handling_mode: batch
+        description: format code with dprint
+
+variables:
+  TB_DPRINT_CONFIG: .pkglink/.devkit/configs/dprint.json
