@@ -25,6 +25,6 @@ jobs:
   checks-complete:
     needs: [{% for item in cookiecutter.devkits | sort(attribute='name') %}{{ item.name }}-check, {% endfor %}]
     if: always()
-    uses: hotdog-werx/checks-complete-action/.github/worksflows/verify.yaml@v0
+    uses: hotdog-werx/checks-complete-action/.github/workflows/verify.yaml@v0
     with:
       needs-jobs: '{% raw %}${{ toJSON(needs) }}{% endraw %}'
