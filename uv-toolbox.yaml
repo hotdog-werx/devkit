@@ -1,0 +1,7 @@
+environments:
+  - name: tools
+    requirements: |
+      ruff==0.15.20
+      complexipy==6.0.1
+      zensical==0.0.47
+      releez==1.0.1
