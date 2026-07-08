@@ -4,7 +4,7 @@ from pathlib import Path
 from repolish import Provider, TemplateMapping
 from typing_extensions import override
 
-from devkit.python.repolish.models import PythonContext, PythonInputs
+from devkit.python.repolish.models import PythonProviderContext, PythonProviderInputs
 
 
 def _detect_project_source() -> str:
@@ -35,7 +35,7 @@ def _detect_project_source() -> str:
     return module_name
 
 
-class PythonProvider(Provider[PythonContext, PythonInputs]):
+class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
     """Repolish provider for Python dev tooling.
 
     Covers ruff, ty, complexipy, pydoclint, and pytest/coverage config.
@@ -50,20 +50,20 @@ class PythonProvider(Provider[PythonContext, PythonInputs]):
     """
 
     @override
-    def create_context(self) -> PythonContext:
+    def create_context(self) -> PythonProviderContext:
         """Build the context for this provider.
 
         Returns:
-            A `PythonContext` with `project_source` detected from the
+            A `PythonProviderContext` with `project_source` detected from the
             consumer's `pyproject.toml`, and all other fields left at their
             Pydantic defaults.
         """
-        return PythonContext(project_source=_detect_project_source())
+        return PythonProviderContext(project_source=_detect_project_source())
 
     @override
     def create_file_mappings(
         self,
-        context: PythonContext,  # noqa: ARG002 - unused, kept for hook signature consistency
+        context: PythonProviderContext,  # noqa: ARG002 - unused, kept for hook signature consistency
     ) -> dict[str, str | TemplateMapping | None]:
         """Build the destination -> template source mappings.
 

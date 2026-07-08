@@ -1,6 +1,11 @@
 providers:
   workspace:
     provider_root: ./packages/workspace/devkit/workspace/resources/templates
+    # resources_dir defaults to provider_root when omitted — but the
+    # workspace provider's symlinks (configs/.editorconfig, configs/dprint.json)
+    # live in resources/configs/, a sibling of resources/templates/, not
+    # under it. Point resources_dir at the parent so symlink sources resolve.
+    resources_dir: ./packages/workspace/devkit/workspace/resources
     context_overrides:
       # devkit's own root pyproject.toml has no [build-system] (it's a pure
       # uv workspace container, package = false) so the generic has_python

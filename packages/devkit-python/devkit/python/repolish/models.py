@@ -1,7 +1,7 @@
 from repolish import BaseContext, BaseInputs
 
 
-class PythonContext(BaseContext):
+class PythonProviderContext(BaseContext):
     """Context for the PythonProvider."""
 
     project_source: str = 'src'
@@ -10,5 +10,5 @@ class PythonContext(BaseContext):
     pydoclint_version: str = 'latest'
 
 
-class PythonInputs(BaseInputs):
+class PythonProviderInputs(BaseInputs):
     """Inputs for the PythonProvider (no cross-provider inputs used yet)."""

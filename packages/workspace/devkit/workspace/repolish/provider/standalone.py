@@ -1,21 +1,5 @@
-from typing_extensions import override
-
-from repolish import ModeHandler, Symlink
-
-from devkit.workspace.repolish.models import WorkspaceProviderContext, WorkspaceProviderInputs
+from devkit.workspace.repolish.provider._shared import _SharedWorkspaceBehavior
 
 
-class WorkspaceStandaloneHandler(ModeHandler[WorkspaceProviderContext, WorkspaceProviderInputs]):
-    """Provider behavior specific to standalone workspaces."""
-
-    @override
-    def create_default_symlinks(
-        self,
-    ) -> list[Symlink]:
-        """Return symlinks to create in standalone workspaces."""
-        return [
-            Symlink(
-                source='configs/.editorconfig',
-                target='.editorconfig',
-            ),
-        ]
+class WorkspaceStandaloneHandler(_SharedWorkspaceBehavior):
+    """Provider behavior specific to standalone-mode workspaces."""

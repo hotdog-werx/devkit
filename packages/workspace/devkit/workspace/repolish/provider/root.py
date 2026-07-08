@@ -1,21 +1,5 @@
-from typing_extensions import override
-
-from repolish import ModeHandler, Symlink
-
-from devkit.workspace.repolish.models import WorkspaceProviderContext, WorkspaceProviderInputs
+from devkit.workspace.repolish.provider._shared import _SharedWorkspaceBehavior
 
 
-class WorkspaceRootHandler(ModeHandler[WorkspaceProviderContext, WorkspaceProviderInputs]):
+class WorkspaceRootHandler(_SharedWorkspaceBehavior):
     """Provider behavior specific to root-mode workspaces."""
-
-    @override
-    def create_default_symlinks(
-        self,
-    ) -> list[Symlink]:
-        """Return symlinks to create in root workspaces."""
-        return [
-            Symlink(
-                source='configs/.editorconfig',
-                target='.editorconfig',
-            ),
-        ]

@@ -1,7 +1,7 @@
 from repolish import BaseContext, BaseInputs
 
 
-class ReleezContext(BaseContext):
+class ReleezProviderContext(BaseContext):
     """Context for the ReleezProvider."""
 
     owner: str = 'hotdog-werx'
@@ -12,5 +12,5 @@ class ReleezContext(BaseContext):
     use_self_action: bool = False
 
 
-class ReleezInputs(BaseInputs):
+class ReleezProviderInputs(BaseInputs):
     """Inputs for the ReleezProvider (no cross-provider inputs used yet)."""

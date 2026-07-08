@@ -4,6 +4,13 @@ from repolish import BaseContext, BaseInputs
 class WorkspaceProviderContext(BaseContext):
     """Context for the WorkspaceProvider."""
 
+    owner: str = ''
+    repo: str = ''
+    year: str = ''
+    devkit_ref: str = 'master'
+    enable_docs: bool = False
+    has_python: bool = False
+
 
 class WorkspaceProviderInputs(BaseInputs):
     """Inputs for the WorkspaceProvider.

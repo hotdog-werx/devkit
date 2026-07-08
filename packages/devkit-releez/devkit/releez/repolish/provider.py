@@ -6,7 +6,7 @@ from typing_extensions import override
 
 from repolish import Provider
 
-from devkit.releez.repolish.models import ReleezContext, ReleezInputs
+from devkit.releez.repolish.models import ReleezProviderContext, ReleezProviderInputs
 
 if TYPE_CHECKING:
     from repolish import TemplateMapping
@@ -32,17 +32,17 @@ def _detect_repo() -> str:
     return match.group(2)
 
 
-class ReleezProvider(Provider[ReleezContext, ReleezInputs]):
+class ReleezProvider(Provider[ReleezProviderContext, ReleezProviderInputs]):
     """Repolish provider for release, publish, and changelog automation."""
 
     @override
-    def create_context(self) -> ReleezContext:
-        return ReleezContext(repo=_detect_repo())
+    def create_context(self) -> ReleezProviderContext:
+        return ReleezProviderContext(repo=_detect_repo())
 
     @override
     def create_file_mappings(
         self,
-        context: ReleezContext,
+        context: ReleezProviderContext,
     ) -> dict[str, 'str | TemplateMapping | None']:
         # TODO: the mise `[tasks]` fragment (regen-changelog, release-start,
         # build, publish) still needs anchor-based merging into the
@@ -54,5 +54,5 @@ class ReleezProvider(Provider[ReleezContext, ReleezInputs]):
         }
 
     @override
-    def create_anchors(self, context: ReleezContext) -> dict[str, str]:
+    def create_anchors(self, context: ReleezProviderContext) -> dict[str, str]:
         return {'additional-jobs': '## post-release jobs — add your custom jobs here'}

@@ -3,8 +3,10 @@ import subprocess
 import pytest
 from repolish.testing import ProviderTestBed
 
-from devkit.workspace.repolish.models import WorkspaceContext
+from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
+from devkit.workspace.repolish.provider.root import WorkspaceRootHandler
+from devkit.workspace.repolish.provider.standalone import WorkspaceStandaloneHandler
 
 CI_CHECKS = '.github/workflows/ci-checks.yaml'
 DEPLOY_DOCS = '.github/workflows/deploy-docs.yaml'
@@ -23,7 +25,7 @@ CI_CHECKS_TEMPLATE = '.github/workflows/ci-checks.yaml.jinja'
 def bed_no_docs_no_python() -> ProviderTestBed:
     return ProviderTestBed(
         WorkspaceProvider,
-        WorkspaceContext(owner='hotdog-werx', repo='example', year='2026'),
+        WorkspaceProviderContext(owner='hotdog-werx', repo='example', year='2026'),
     )
 
 
@@ -31,7 +33,7 @@ def bed_no_docs_no_python() -> ProviderTestBed:
 def bed_docs_and_python() -> ProviderTestBed:
     return ProviderTestBed(
         WorkspaceProvider,
-        WorkspaceContext(
+        WorkspaceProviderContext(
             owner='hotdog-werx',
             repo='example',
             year='2026',
@@ -75,9 +77,33 @@ def test_file_mappings_include_deploy_docs_when_enabled(bed_docs_and_python):
 def test_render_all_succeeds_without_docs_or_python(bed_no_docs_no_python):
     """Every mapped/auto-discovered template must render with no Jinja errors."""
     rendered = bed_no_docs_no_python.render_all()
-    assert '.editorconfig' in rendered
-    assert 'dprint.json' in rendered
     assert DEPLOY_DOCS not in rendered  # mapped to None, not rendered
+
+
+@pytest.mark.parametrize(
+    'handler_cls',
+    [WorkspaceRootHandler, WorkspaceStandaloneHandler],
+)
+def test_editorconfig_and_dprint_json_are_symlinked_not_rendered(handler_cls):
+    """.editorconfig/dprint.json are static passthrough config — symlinked via
+    create_default_symlinks(), not copied/rendered via create_file_mappings().
+
+    Note: ProviderTestBed.symlinks() calls create_default_symlinks()
+    directly on the base Provider instance, bypassing mode-handler dispatch
+    (unlike create_file_mappings()/create_anchors(), which do dispatch via
+    call_provider_method). The real repolish CLI *does* combine
+    provider-level and handler-level symlinks (see
+    repolish.linker.orchestrator._symlinks_from_module) — so this test
+    instantiates the mode handler directly to verify what the real pipeline
+    actually sees.
+    """
+    symlinks = handler_cls().create_default_symlinks()
+    targets = {s.target for s in symlinks}
+    sources = {s.source for s in symlinks}
+    assert '.editorconfig' in targets
+    assert 'dprint.json' in targets
+    assert 'configs/.editorconfig' in sources
+    assert 'configs/dprint.json' in sources
 
 
 def test_ci_checks_omits_python_checks_job_when_has_python_false(bed_no_docs_no_python):

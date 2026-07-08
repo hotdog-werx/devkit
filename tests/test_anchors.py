@@ -12,16 +12,16 @@ from jinja2 import Environment, StrictUndefined
 from repolish.preprocessors.anchors import replace_tags_in_content
 from repolish.testing import ProviderTestBed
 
-from devkit.releez.repolish.models import ReleezContext
+from devkit.releez.repolish.models import ReleezProviderContext
 from devkit.releez.repolish.provider import ReleezProvider
-from devkit.workspace.repolish.models import WorkspaceContext
+from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
 
 
 def test_workspace_ci_checks_anchor_marker_is_replaceable():
     bed = ProviderTestBed(
         WorkspaceProvider,
-        WorkspaceContext(has_python=True, enable_docs=False),
+        WorkspaceProviderContext(has_python=True, enable_docs=False),
     )
     content = bed.render('.github/workflows/ci-checks.yaml.jinja')
 
@@ -43,7 +43,7 @@ def test_workspace_ci_checks_anchor_marker_is_replaceable():
 def test_workspace_deploy_docs_anchor_marker_is_replaceable():
     bed = ProviderTestBed(
         WorkspaceProvider,
-        WorkspaceContext(enable_docs=True),
+        WorkspaceProviderContext(enable_docs=True),
     )
     content = bed.render('.github/workflows/deploy-docs.yaml.jinja')
 
@@ -60,7 +60,7 @@ def test_workspace_deploy_docs_anchor_marker_is_replaceable():
 def test_releez_finalize_release_anchor_marker_is_replaceable():
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezContext(repo='example', use_self_action=False),
+        ReleezProviderContext(repo='example', use_self_action=False),
     )
     content = bed.render('.github/workflows/finalize-release.yaml.jinja')
 
@@ -85,7 +85,7 @@ def test_anchor_content_with_github_actions_expressions_survives_raw_wrapping():
     """
     bed = ProviderTestBed(
         WorkspaceProvider,
-        WorkspaceContext(has_python=True),
+        WorkspaceProviderContext(has_python=True),
     )
     content = bed.render('.github/workflows/ci-checks.yaml.jinja')
 
