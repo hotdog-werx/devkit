@@ -1,0 +1,2 @@
+[tasks]
+regen-changelog.run = "mise exec -- releez changelog regenerate"

@@ -1,3 +1,8 @@
-.venv
+.venv/
+__pycache__/
+*.pyc
 .editorconfig
-__pycache__
+.repolish/
+dist/
+.coverage-files/
+site/

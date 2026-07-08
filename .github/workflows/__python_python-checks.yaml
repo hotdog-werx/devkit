@@ -1,0 +1,45 @@
+name: python-checks
+
+on:
+  workflow_call:
+    inputs:
+      operating-systems:
+        description: 'JSON array of operating systems to run checks on'
+        required: false
+        type: string
+        default: '["ubuntu-latest"]'
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ${{ fromJSON(inputs.operating-systems) }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup-uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: '**/pyproject.toml'
+      - name: mise
+        uses: jdx/mise-action@v3
+      - name: dependencies
+        run: mise run uv-sync
+      - name: check-python
+        run: mise run check-python
+      - name: check-format
+        run: mise run check-format
+      - name: check-ty
+        run: mise run check-ty
+      - name: check-complexity
+        run: mise run check-complexity
+      - name: check-pydoclint
+        run: mise run check-pydoclint
+        continue-on-error: true
+      - name: check-coverage
+        run: mise run check-coverage

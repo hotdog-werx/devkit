@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [ -f pyproject.toml ]; then
+  uv sync --all-groups
+else
+  echo "skipping uv sync, no pyproject.toml found"
+fi

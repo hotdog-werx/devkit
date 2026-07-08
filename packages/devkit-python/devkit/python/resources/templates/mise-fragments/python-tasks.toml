@@ -1,0 +1,8 @@
+[tasks]
+format-python.run = "uvx tbelt format python"
+check-python.run = "uvx tbelt check python"
+check-format.run = "uvx ruff format --check --config ruff.toml ."
+check-ty.run = "uvx tbelt check ty"
+check-complexity.run = "uvx tbelt check complexity"
+check-pydoclint.run = "uvx tbelt check pydoclint"
+check-coverage.run = "uvx tbelt check coverage"

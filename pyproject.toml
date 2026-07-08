@@ -1,3 +1,12 @@
+[project]
+name = "devkit"
+version = "0.0.0"
+description = "Shared repolish providers, mise tasks, and CI workflows for hotdog-werx repos"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = []
+
 [tool.uv]
 package = false
 
@@ -12,5 +21,5 @@ dev = [
   "ty >= 0.0.16",
 ]
 repolish = [
-  "repolish >= 1.0.0"
+  "repolish >= 1.0.0",
 ]

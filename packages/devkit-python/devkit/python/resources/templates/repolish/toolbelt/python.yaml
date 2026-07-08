@@ -1,0 +1,83 @@
+profiles:
+  python:
+    extensions: ['.py']
+
+    check_tools:
+      - name: ruff-check
+        command: uvx
+        args:
+          - ruff@${TB_RUFF_VERSION:latest}
+          - --config
+          - ${TB_RUFF_CONFIG:ruff.toml}
+          - check
+        file_handling_mode: batch
+        default_target: .
+        description: check python code with ruff
+      - name: ruff-format-check
+        command: uvx
+        args:
+          - ruff@${TB_RUFF_VERSION:latest}
+          - --config
+          - ${TB_RUFF_CONFIG:ruff.toml}
+          - format
+          - --check
+        file_handling_mode: batch
+        default_target: .
+        description: check python formatting with ruff
+
+    format_tools:
+      - name: ruff-format-80
+        command: uvx
+        args:
+          - ruff@${TB_RUFF_VERSION:latest}
+          - --config
+          - ${TB_RUFF_CONFIG:ruff.toml}
+          - format
+          - --line-length=80
+        file_handling_mode: batch
+        default_target: .
+        description: first formatting pass with line length 80
+      - name: add-trailing-comma
+        command: uvx
+        args:
+          - add-trailing-comma@${TB_ADD_TRAILING_COMMA_VERSION:latest}
+          - --exit-zero-even-if-changed
+        file_handling_mode: per_file
+        description: add trailing commas to Python code
+      - name: ruff-format-120
+        command: uvx
+        args:
+          - ruff@${TB_RUFF_VERSION:latest}
+          - --config
+          - ${TB_RUFF_CONFIG:ruff.toml}
+          - format
+          - --line-length=120
+        file_handling_mode: batch
+        default_target: .
+        description: Python formatter with default line length
+      - name: ruff-check-fix
+        command: uvx
+        args:
+          - ruff@${TB_RUFF_VERSION:latest}
+          - --config
+          - ${TB_RUFF_CONFIG:ruff.toml}
+          - check
+          - --fix
+          - --fix-only
+        file_handling_mode: batch
+        default_target: .
+        description: Auto-fix Python issues with Ruff
+      - name: ruff-format
+        command: uvx
+        args:
+          - ruff@${TB_RUFF_VERSION:latest}
+          - --config
+          - ${TB_RUFF_CONFIG:ruff.toml}
+          - format
+        file_handling_mode: batch
+        default_target: .
+        description: Final Python formatting pass
+
+variables:
+  TB_RUFF_VERSION: 0.14.14
+  TB_ADD_TRAILING_COMMA_VERSION: 3.2.0

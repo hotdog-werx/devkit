@@ -1,0 +1,59 @@
+name: deploy-docs
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  check-docs:
+    runs-on: ubuntu-latest
+    outputs:
+      has-docs: ${{ steps.check-docs.outputs.has-docs }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: check-docs-folder
+        id: check-docs
+        shell: bash
+        run: |
+          HAS_DOCS=$([ -f "zensical.toml" ] && echo "true" || echo "false")
+          echo "has-docs=$HAS_DOCS" >> "$GITHUB_OUTPUT"
+
+  build-and-deploy:
+    needs: check-docs
+    if: needs.check-docs.outputs.has-docs == 'true'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: setup-uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: '**/pyproject.toml'
+      - name: mise
+        uses: jdx/mise-action@v3
+      - name: dependencies
+        run: mise run uv-sync
+      - name: check-python
+        run: mise run check-python
+      - name: build-docs
+        run: mise run build-docs
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

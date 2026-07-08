@@ -1,0 +1,21 @@
+[project]
+name = "devkit-releez"
+description = "Repolish provider: release, publish, and changelog automation"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+version = "0.1.0"
+dependencies = [
+  "repolish",
+]
+
+[project.scripts]
+devkit-releez-link = "devkit.releez.repolish.linker:main"
+
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "devkit.releez"
+module-root = "."
