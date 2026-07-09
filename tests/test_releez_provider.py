@@ -10,28 +10,60 @@ from devkit.releez.repolish.provider import ReleezProvider
 # doesn't do the same fallback for dest-mapped entries, so these tests call
 # bed.render() directly with the literal on-disk .jinja-suffixed path.
 FINALIZE_RELEASE_TEMPLATE = '.github/workflows/finalize-release.yaml.jinja'
+LINT_PR_TITLE_TEMPLATE = '.github/workflows/lint-pr-title.yaml.jinja'
+VALIDATE_RELEASE_TEMPLATE = '.github/workflows/validate-release.yaml.jinja'
 CLIFF_TOML_TEMPLATE = 'cliff.toml.jinja'
 
 
-def test_render_all_succeeds_use_self_action_false():
+def test_finalize_release_uses_published_action_ref_by_default():
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='uv-toolbox', use_self_action=False))
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert 'uses: hotdog-werx/releez@v1' in workflow
-    assert 'uses: ./' not in workflow
+    assert "releez-action-ref: 'hotdog-werx/releez@v1'" in workflow
+    assert "releez-action-ref: './'" not in workflow
 
 
-def test_render_all_succeeds_use_self_action_true():
+def test_finalize_release_uses_self_action_when_enabled():
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='releez', use_self_action=True))
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert 'uses: ./' in workflow
-    assert 'uses: hotdog-werx/releez@v1' not in workflow
+    assert "releez-action-ref: './'" in workflow
+    assert "releez-action-ref: 'hotdog-werx/releez@v1'" not in workflow
 
 
 def test_finalize_release_uses_mise_tasks_for_build_and_publish():
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='example'))
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert 'run: mise run build' in workflow
-    assert 'run: mise run publish' in workflow
+    assert 'build-command: mise run build' in workflow
+    assert 'publish-command: mise run publish' in workflow
+
+
+def test_finalize_release_references_releez_ref_reusable_workflow():
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(releez_ref='topic/repolish'))
+    workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
+    assert '__releez_publish.yaml@topic/repolish' in workflow
+
+
+def test_lint_pr_title_references_releez_ref_reusable_workflow():
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(releez_ref='topic/repolish'))
+    workflow = bed.render(LINT_PR_TITLE_TEMPLATE)
+    assert '__releez_lint-pr-title.yaml@topic/repolish' in workflow
+
+
+def test_lint_pr_title_uses_self_action_when_enabled():
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(use_self_action=True))
+    workflow = bed.render(LINT_PR_TITLE_TEMPLATE)
+    assert "releez-action-ref: './'" in workflow
+
+
+def test_validate_release_references_releez_ref_reusable_workflow():
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(releez_ref='topic/repolish'))
+    workflow = bed.render(VALIDATE_RELEASE_TEMPLATE)
+    assert '__releez_validate-release.yaml@topic/repolish' in workflow
+
+
+def test_validate_release_uses_published_action_ref_by_default():
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(use_self_action=False))
+    workflow = bed.render(VALIDATE_RELEASE_TEMPLATE)
+    assert "releez-action-ref: 'hotdog-werx/releez@v1'" in workflow
 
 
 def test_cliff_toml_is_valid_toml_and_preserves_tera_syntax():
@@ -60,6 +92,8 @@ def test_no_pyright_references():
         [
             *rendered.values(),
             bed.render(FINALIZE_RELEASE_TEMPLATE),
+            bed.render(LINT_PR_TITLE_TEMPLATE),
+            bed.render(VALIDATE_RELEASE_TEMPLATE),
             bed.render(CLIFF_TOML_TEMPLATE),
         ],
     )

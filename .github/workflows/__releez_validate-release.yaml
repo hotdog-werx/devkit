@@ -1,0 +1,31 @@
+name: releez-validate-release
+
+on:
+  workflow_call:
+    inputs:
+      releez-action-ref:
+        description: 'Ref for the hotdog-werx/releez action, e.g. hotdog-werx/releez@v1, or ./ to dogfood the current repo'
+        type: string
+        default: hotdog-werx/releez@v1
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  validate:
+    name: Validate release PR
+    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'release/')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Validate release
+        uses: ${{ inputs.releez-action-ref }}
+        with:
+          mode: validate
+          post-comment: 'true'

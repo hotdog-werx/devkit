@@ -39,7 +39,8 @@ def bed_docs_and_python() -> ProviderTestBed:
             year='2026',
             enable_docs=True,
             has_python=True,
-            devkit_ref='topic/repolish',
+            workspace_ref='topic/repolish',
+            python_ref='python-v2',
         ),
     )
 
@@ -117,10 +118,16 @@ def test_ci_checks_includes_python_checks_job_when_has_python_true(bed_docs_and_
     assert 'python-checks:' in content
 
 
-def test_ci_checks_references_devkit_ref_in_reusable_workflow_uses(bed_docs_and_python):
+def test_ci_checks_references_independent_refs_per_namespace(bed_docs_and_python):
+    """workspace_ref and python_ref are independently pinnable — ci-checks.yaml
+    calls into both the __workspace_ and __python_ reusable-workflow
+    namespaces, and each may need to move to a different devkit ref/tag
+    on its own schedule (e.g. once each provider package gets its own
+    release cycle).
+    """
     content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
     assert '__workspace_repo-checks.yaml@topic/repolish' in content
-    assert '__python_python-checks.yaml@topic/repolish' in content
+    assert '__python_python-checks.yaml@python-v2' in content
 
 
 def test_enable_docs_passed_through_to_repo_checks_input(bed_docs_and_python):
@@ -133,6 +140,6 @@ def test_enable_docs_false_passed_through(bed_no_docs_no_python):
     assert 'enable-docs: false' in content
 
 
-def test_deploy_docs_references_devkit_ref(bed_docs_and_python):
+def test_deploy_docs_references_workspace_ref(bed_docs_and_python):
     content = bed_docs_and_python.render('.github/workflows/deploy-docs.yaml.jinja')
     assert '__workspace_deploy-docs.yaml@topic/repolish' in content

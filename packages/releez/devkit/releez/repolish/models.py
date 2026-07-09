@@ -6,6 +6,7 @@ class ReleezProviderContext(BaseContext):
 
     owner: str = 'hotdog-werx'
     repo: str = ''
+    releez_ref: str = 'master'
     build_command: str = 'mise run build'
     publish_command: str = 'mise run publish'
     releez_action_version: str = 'v1'

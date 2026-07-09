@@ -74,6 +74,34 @@ def test_releez_finalize_release_anchor_marker_is_replaceable():
     assert 'notify:' in replaced
 
 
+def test_releez_lint_pr_title_anchor_marker_is_replaceable():
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='example'))
+    content = bed.render('.github/workflows/lint-pr-title.yaml.jinja')
+
+    assert '## repolish-start[additional-lint-pr-title-jobs]' in content
+    assert '## repolish-end[additional-lint-pr-title-jobs]' in content
+
+    replaced = replace_tags_in_content(
+        content,
+        {'additional-lint-pr-title-jobs': 'notify:\n  runs-on: ubuntu-latest'},
+    )
+    assert 'notify:' in replaced
+
+
+def test_releez_validate_release_anchor_marker_is_replaceable():
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='example'))
+    content = bed.render('.github/workflows/validate-release.yaml.jinja')
+
+    assert '## repolish-start[additional-validate-release-jobs]' in content
+    assert '## repolish-end[additional-validate-release-jobs]' in content
+
+    replaced = replace_tags_in_content(
+        content,
+        {'additional-validate-release-jobs': 'notify:\n  runs-on: ubuntu-latest'},
+    )
+    assert 'notify:' in replaced
+
+
 def test_anchor_content_with_github_actions_expressions_survives_raw_wrapping():
     """A ${{ }} expression injected via an anchor must not be swallowed by Jinja.
 

@@ -1,0 +1,60 @@
+name: releez-publish
+
+on:
+  workflow_call:
+    inputs:
+      releez-action-ref:
+        description: 'Ref for the hotdog-werx/releez action, e.g. hotdog-werx/releez@v1, or ./ to dogfood the current repo'
+        type: string
+        default: hotdog-werx/releez@v1
+      build-command:
+        description: 'Command used to set the build version'
+        type: string
+        default: mise run build
+      publish-command:
+        description: 'Command used to publish the built package'
+        type: string
+        default: mise run publish
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Finalize release
+    runs-on: ubuntu-latest
+    if: >
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install mise tools
+        uses: jdx/mise-action@v4
+
+      - name: Releez finalize
+        id: releez
+        uses: ${{ inputs.releez-action-ref }}
+        with:
+          mode: finalize
+
+      - name: Set build version
+        run: uv version ${{ steps.releez.outputs.pep440-versions }} --frozen
+
+      - name: Build package
+        run: ${{ inputs.build-command }}
+
+      - name: Publish to PyPI
+        env:
+          UV_PUBLISH_URL: ${{ vars.PYPI_PUBLISH_URL }}
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_PUBLISH_TOKEN }}
+        run: ${{ inputs.publish-command }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.releez.outputs.release-version }}
+          body: ${{ steps.releez.outputs.release-notes }}

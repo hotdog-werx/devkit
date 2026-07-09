@@ -7,7 +7,8 @@ class WorkspaceProviderContext(BaseContext):
     owner: str = ''
     repo: str = ''
     year: str = ''
-    devkit_ref: str = 'master'
+    workspace_ref: str = 'master'
+    python_ref: str = 'master'
     enable_docs: bool = False
     has_python: bool = False
 
