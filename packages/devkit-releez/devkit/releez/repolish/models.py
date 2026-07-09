@@ -11,6 +11,10 @@ class ReleezProviderContext(BaseContext):
     publish_command: str = 'mise run publish'
     releez_action_version: str = 'v1'
     use_self_action: bool = False
+    # Some consumers (e.g. devkit itself, a uv workspace container with no
+    # single installable package at its root) only want tagging/changelog/GH
+    # release out of the finalize job, not a PyPI build+publish step.
+    publish_package: bool = True
 
 
 class ReleezProviderInputs(BaseInputs):

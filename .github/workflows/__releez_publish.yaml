@@ -15,6 +15,10 @@ on:
         description: 'Command used to publish the built package'
         type: string
         default: mise run publish
+      publish-package:
+        description: 'Whether to build and publish a package to PyPI. Set false for repos with no single installable root package (e.g. a bare workspace container) — the tag/changelog/GitHub Release steps still run.'
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -42,12 +46,15 @@ jobs:
           mode: finalize
 
       - name: Set build version
+        if: inputs.publish-package
         run: uv version ${{ steps.releez.outputs.pep440-versions }} --frozen
 
       - name: Build package
+        if: inputs.publish-package
         run: ${{ inputs.build-command }}
 
       - name: Publish to PyPI
+        if: inputs.publish-package
         env:
           UV_PUBLISH_URL: ${{ vars.PYPI_PUBLISH_URL }}
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_PUBLISH_TOKEN }}

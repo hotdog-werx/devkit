@@ -42,6 +42,22 @@ def test_finalize_release_references_releez_ref_reusable_workflow():
     assert '__releez_publish.yaml@topic/repolish' in workflow
 
 
+def test_finalize_release_publish_package_defaults_true():
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext())
+    workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
+    assert 'publish-package: true' in workflow
+
+
+def test_finalize_release_publish_package_can_be_disabled():
+    """devkit itself (a bare workspace container with no installable root
+    package) needs tagging/changelog/GitHub Release without a PyPI build+
+    publish step — publish_package=False must render `false` for that input.
+    """
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(publish_package=False))
+    workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
+    assert 'publish-package: false' in workflow
+
+
 def test_lint_pr_title_references_releez_ref_reusable_workflow():
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(releez_ref='topic/repolish'))
     workflow = bed.render(LINT_PR_TITLE_TEMPLATE)

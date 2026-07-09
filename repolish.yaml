@@ -25,6 +25,12 @@ providers:
     context_overrides:
       use_self_action: false
       releez_ref: topic/repolish
+      # devkit's root pyproject.toml is a bare uv workspace container
+      # (package = false, no [build-system]) — there's nothing to build or
+      # publish to PyPI at this level. Individual provider packages may get
+      # their own release cycle later; for now devkit only tags/changelogs/
+      # GitHub-releases itself.
+      publish_package: false
 
 providers_order:
   - workspace
