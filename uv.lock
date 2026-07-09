@@ -171,7 +171,7 @@ repolish = [{ name = "repolish", specifier = ">=1.0.0" }]
 [[package]]
 name = "devkit-python"
 version = "0.1.0"
-source = { editable = "packages/python" }
+source = { editable = "packages/devkit-python" }
 dependencies = [
     { name = "repolish" },
 ]
@@ -182,7 +182,7 @@ requires-dist = [{ name = "repolish" }]
 [[package]]
 name = "devkit-releez"
 version = "0.1.0"
-source = { editable = "packages/releez" }
+source = { editable = "packages/devkit-releez" }
 dependencies = [
     { name = "repolish" },
 ]
@@ -193,7 +193,7 @@ requires-dist = [{ name = "repolish" }]
 [[package]]
 name = "devkit-workspace"
 version = "0.1.0"
-source = { editable = "packages/workspace" }
+source = { editable = "packages/devkit-workspace" }
 dependencies = [
     { name = "repolish" },
 ]
