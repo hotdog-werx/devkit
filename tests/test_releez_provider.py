@@ -1,9 +1,8 @@
 import tomllib
 
-from repolish.testing import ProviderTestBed
-
 from devkit.releez.repolish.models import ReleezProviderContext
 from devkit.releez.repolish.provider import ReleezProvider
+from repolish.testing import ProviderTestBed
 
 # NOTE: create_file_mappings() references these without the .jinja suffix
 # (correct for the real CLI, which resolves that automatically); render_all()
@@ -16,14 +15,20 @@ CLIFF_TOML_TEMPLATE = 'cliff.toml.jinja'
 
 
 def test_finalize_release_uses_published_action_ref_by_default():
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='uv-toolbox', use_self_action=False))
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(repo='uv-toolbox', use_self_action=False),
+    )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert "releez-action-ref: 'hotdog-werx/releez@v1'" in workflow
     assert "releez-action-ref: './'" not in workflow
 
 
 def test_finalize_release_uses_self_action_when_enabled():
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='releez', use_self_action=True))
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(repo='releez', use_self_action=True),
+    )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert "releez-action-ref: './'" in workflow
     assert "releez-action-ref: 'hotdog-werx/releez@v1'" not in workflow
@@ -37,7 +42,10 @@ def test_finalize_release_uses_mise_tasks_for_build_and_publish():
 
 
 def test_finalize_release_references_releez_ref_reusable_workflow():
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(releez_ref='topic/repolish'))
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(releez_ref='topic/repolish'),
+    )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert '__releez_publish.yaml@topic/repolish' in workflow
 
@@ -49,35 +57,52 @@ def test_finalize_release_publish_package_defaults_true():
 
 
 def test_finalize_release_publish_package_can_be_disabled():
-    """devkit itself (a bare workspace container with no installable root
+    """publish_package=False must render `false` for the publish-package input.
+
+    Devkit itself (a bare workspace container with no installable root
     package) needs tagging/changelog/GitHub Release without a PyPI build+
-    publish step — publish_package=False must render `false` for that input.
+    publish step.
     """
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(publish_package=False))
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(publish_package=False),
+    )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert 'publish-package: false' in workflow
 
 
 def test_lint_pr_title_references_releez_ref_reusable_workflow():
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(releez_ref='topic/repolish'))
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(releez_ref='topic/repolish'),
+    )
     workflow = bed.render(LINT_PR_TITLE_TEMPLATE)
     assert '__releez_lint-pr-title.yaml@topic/repolish' in workflow
 
 
 def test_lint_pr_title_uses_self_action_when_enabled():
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(use_self_action=True))
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(use_self_action=True),
+    )
     workflow = bed.render(LINT_PR_TITLE_TEMPLATE)
     assert "releez-action-ref: './'" in workflow
 
 
 def test_validate_release_references_releez_ref_reusable_workflow():
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(releez_ref='topic/repolish'))
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(releez_ref='topic/repolish'),
+    )
     workflow = bed.render(VALIDATE_RELEASE_TEMPLATE)
     assert '__releez_validate-release.yaml@topic/repolish' in workflow
 
 
 def test_validate_release_uses_published_action_ref_by_default():
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(use_self_action=False))
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(use_self_action=False),
+    )
     workflow = bed.render(VALIDATE_RELEASE_TEMPLATE)
     assert "releez-action-ref: 'hotdog-werx/releez@v1'" in workflow
 
@@ -90,7 +115,10 @@ def test_cliff_toml_is_valid_toml_and_preserves_tera_syntax():
     Regression test for the raw-block boundary being drawn in the right
     place.
     """
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(owner='hotdog-werx', repo='releez'))
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(owner='hotdog-werx', repo='releez'),
+    )
     content = bed.render(CLIFF_TOML_TEMPLATE)
     parsed = tomllib.loads(content)
 

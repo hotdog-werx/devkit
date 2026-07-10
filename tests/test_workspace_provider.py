@@ -1,12 +1,13 @@
 import subprocess
 
 import pytest
-from repolish.testing import ProviderTestBed
-
 from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
 from devkit.workspace.repolish.provider.root import WorkspaceRootHandler
-from devkit.workspace.repolish.provider.standalone import WorkspaceStandaloneHandler
+from devkit.workspace.repolish.provider.standalone import (
+    WorkspaceStandaloneHandler,
+)
+from repolish.testing import ProviderTestBed
 
 CI_CHECKS = '.github/workflows/ci-checks.yaml'
 DEPLOY_DOCS = '.github/workflows/deploy-docs.yaml'
@@ -25,7 +26,11 @@ CI_CHECKS_TEMPLATE = '.github/workflows/ci-checks.yaml.jinja'
 def bed_no_docs_no_python() -> ProviderTestBed:
     return ProviderTestBed(
         WorkspaceProvider,
-        WorkspaceProviderContext(owner='hotdog-werx', repo='example', year='2026'),
+        WorkspaceProviderContext(
+            owner='hotdog-werx',
+            repo='example',
+            year='2026',
+        ),
     )
 
 
@@ -86,7 +91,9 @@ def test_render_all_succeeds_without_docs_or_python(bed_no_docs_no_python):
     [WorkspaceRootHandler, WorkspaceStandaloneHandler],
 )
 def test_editorconfig_and_dprint_json_are_symlinked_not_rendered(handler_cls):
-    """.editorconfig/dprint.json are static passthrough config — symlinked via
+    """.editorconfig/dprint.json are symlinked, not rendered.
+
+    They're static passthrough config, symlinked via
     create_default_symlinks(), not copied/rendered via create_file_mappings().
 
     Note: ProviderTestBed.symlinks() calls create_default_symlinks()
@@ -107,23 +114,30 @@ def test_editorconfig_and_dprint_json_are_symlinked_not_rendered(handler_cls):
     assert 'configs/dprint.json' in sources
 
 
-def test_ci_checks_omits_python_checks_job_when_has_python_false(bed_no_docs_no_python):
+def test_ci_checks_omits_python_checks_job_when_has_python_false(
+    bed_no_docs_no_python,
+):
     content = bed_no_docs_no_python.render(CI_CHECKS_TEMPLATE)
     assert 'python-checks:' not in content
     assert 'repo-checks:' in content
 
 
-def test_ci_checks_includes_python_checks_job_when_has_python_true(bed_docs_and_python):
+def test_ci_checks_includes_python_checks_job_when_has_python_true(
+    bed_docs_and_python,
+):
     content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
     assert 'python-checks:' in content
 
 
-def test_ci_checks_references_independent_refs_per_namespace(bed_docs_and_python):
-    """workspace_ref and python_ref are independently pinnable — ci-checks.yaml
-    calls into both the __workspace_ and __python_ reusable-workflow
-    namespaces, and each may need to move to a different devkit ref/tag
-    on its own schedule (e.g. once each provider package gets its own
-    release cycle).
+def test_ci_checks_references_independent_refs_per_namespace(
+    bed_docs_and_python,
+):
+    """workspace_ref and python_ref are independently pinnable.
+
+    ci-checks.yaml calls into both the __workspace_ and __python_ reusable-
+    workflow namespaces, and each may need to move to a different devkit
+    ref/tag on its own schedule (e.g. once each provider package gets its
+    own release cycle).
     """
     content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
     assert '__workspace_repo-checks.yaml@topic/repolish' in content
@@ -141,5 +155,7 @@ def test_enable_docs_false_passed_through(bed_no_docs_no_python):
 
 
 def test_deploy_docs_references_workspace_ref(bed_docs_and_python):
-    content = bed_docs_and_python.render('.github/workflows/deploy-docs.yaml.jinja')
+    content = bed_docs_and_python.render(
+        '.github/workflows/deploy-docs.yaml.jinja',
+    )
     assert '__workspace_deploy-docs.yaml@topic/repolish' in content

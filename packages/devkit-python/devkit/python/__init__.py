@@ -1,4 +1,5 @@
-from importlib.metadata import PackageNotFoundError, version as _v
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _v
 
 try:
     __version__ = _v('devkit-python')

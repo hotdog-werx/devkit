@@ -1,10 +1,12 @@
 import tomllib
 from pathlib import Path
 
+from devkit.python.repolish.models import (
+    PythonProviderContext,
+    PythonProviderInputs,
+)
 from repolish import Provider, TemplateMapping
 from typing_extensions import override
-
-from devkit.python.repolish.models import PythonProviderContext, PythonProviderInputs
 
 
 def _detect_project_source() -> str:
@@ -63,7 +65,7 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
     @override
     def create_file_mappings(
         self,
-        context: PythonProviderContext,  # noqa: ARG002 - unused, kept for hook signature consistency
+        context: PythonProviderContext,
     ) -> dict[str, str | TemplateMapping | None]:
         """Build the destination -> template source mappings.
 
@@ -71,17 +73,14 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
             Mapping of destination paths in the consumer repo to template
             source strings.
         """
-        # TODO: The mise `[tasks]` fragment for Python tasks (format-python,
+        # NOTE: The mise `[tasks]` fragment for Python tasks (format-python,
         # check-python, check-format, check-ty, check-complexity,
-        # check-pydoclint, check-coverage, uv-sync) still needs to be merged
-        # into the consumer's mise.toml via an anchor. Deferred, not
-        # blocking. Raw content lives at
-        # resources/templates/mise-fragments/python-tasks.toml for now.
+        # check-pydoclint, check-coverage, uv-sync) isn't auto-merged into
+        # the consumer's mise.toml (anchor-based TOML merging isn't built
+        # yet) — it's hand-copied from
+        # resources/templates/mise-fragments/python-tasks.toml.
         return {
             'ruff.toml': 'ruff.toml',
             'coveragerc.toml': 'coveragerc.toml',
             'pydoclint.toml': 'pydoclint.toml',
-            'toolbelt.yaml': 'toolbelt.yaml',
-            'toolbelt/python.yaml': 'toolbelt/python.yaml',
-            'toolbelt/python-dev.yaml': 'toolbelt/python-dev.yaml',
         }

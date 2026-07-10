@@ -1,11 +1,9 @@
-from typing_extensions import override
-
-from repolish import ModeHandler, Symlink, TemplateMapping
-
 from devkit.workspace.repolish.models import (
     WorkspaceProviderContext,
     WorkspaceProviderInputs,
 )
+from repolish import ModeHandler, Symlink, TemplateMapping
+from typing_extensions import override
 
 
 class _SharedWorkspaceBehavior(
@@ -29,9 +27,9 @@ class _SharedWorkspaceBehavior(
         self,
         context: WorkspaceProviderContext,
     ) -> dict[str, str | TemplateMapping | None]:
-        # TODO: mise.toml base-scaffold merging is a follow-up, not blocking.
-        # LICENSE and README.md also need anchor-based merging into
-        # potentially-existing files and are likewise deferred.
+        # NOTE: mise.toml base-scaffold merging isn't built yet. LICENSE and
+        # README.md also need anchor-based merging into potentially-existing
+        # files and are likewise not yet implemented.
         return {
             '.github/workflows/ci-checks.yaml': '.github/workflows/ci-checks.yaml',
             '.github/workflows/deploy-docs.yaml': (
@@ -42,7 +40,7 @@ class _SharedWorkspaceBehavior(
     @override
     def create_anchors(
         self,
-        context: WorkspaceProviderContext,  # noqa: ARG002
+        context: WorkspaceProviderContext,
     ) -> dict[str, str]:
         return {
             'additional-ci-jobs': '## post-check jobs — add your custom jobs here',

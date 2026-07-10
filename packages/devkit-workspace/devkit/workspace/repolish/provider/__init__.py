@@ -3,17 +3,17 @@ import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
-from typing_extensions import override
-
-from repolish import Provider
-
 from devkit.workspace.repolish.models import (
     WorkspaceProviderContext,
     WorkspaceProviderInputs,
 )
 from devkit.workspace.repolish.provider.member import WorkspaceMemberHandler
 from devkit.workspace.repolish.provider.root import WorkspaceRootHandler
-from devkit.workspace.repolish.provider.standalone import WorkspaceStandaloneHandler
+from devkit.workspace.repolish.provider.standalone import (
+    WorkspaceStandaloneHandler,
+)
+from repolish import Provider
+from typing_extensions import override
 
 _GITHUB_REMOTE_RE = re.compile(
     r'(?:https://(?:[^/]+@)?github\.com/|git@github\.com:)([^/]+)/([^.]+)(?:\.git)?$',
@@ -41,7 +41,9 @@ def _detect_owner_repo() -> tuple[str, str]:
     return match.group(1), match.group(2)
 
 
-class WorkspaceProvider(Provider[WorkspaceProviderContext, WorkspaceProviderInputs]):
+class WorkspaceProvider(
+    Provider[WorkspaceProviderContext, WorkspaceProviderInputs],
+):
     """WorkspaceProvider repolish provider."""
 
     root_mode = WorkspaceRootHandler

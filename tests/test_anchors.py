@@ -8,14 +8,13 @@ every rendered file unreplaced. Confirming the *real* marker + substitution
 behavior here catches that class of bug for every template that uses anchors.
 """
 
-from jinja2 import Environment, StrictUndefined
-from repolish.preprocessors.anchors import replace_tags_in_content
-from repolish.testing import ProviderTestBed
-
 from devkit.releez.repolish.models import ReleezProviderContext
 from devkit.releez.repolish.provider import ReleezProvider
 from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
+from jinja2 import Environment, StrictUndefined
+from repolish.preprocessors.anchors import replace_tags_in_content
+from repolish.testing import ProviderTestBed
 
 
 def test_workspace_ci_checks_anchor_marker_is_replaceable():
@@ -97,7 +96,9 @@ def test_releez_validate_release_anchor_marker_is_replaceable():
 
     replaced = replace_tags_in_content(
         content,
-        {'additional-validate-release-jobs': 'notify:\n  runs-on: ubuntu-latest'},
+        {
+            'additional-validate-release-jobs': 'notify:\n  runs-on: ubuntu-latest',
+        },
     )
     assert 'notify:' in replaced
 
@@ -127,5 +128,5 @@ def test_anchor_content_with_github_actions_expressions_survives_raw_wrapping():
     # apply pipeline does — this is the step that previously blew up with
     # "'matrix' is undefined" when the ${{ }} wasn't raw-wrapped.
     env = Environment(undefined=StrictUndefined, keep_trailing_newline=True)
-    final = env.from_string(substituted).render(**{})
+    final = env.from_string(substituted).render()
     assert '${{ matrix.os }}' in final

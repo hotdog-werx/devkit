@@ -2,11 +2,12 @@ import re
 import subprocess
 from typing import TYPE_CHECKING
 
-from typing_extensions import override
-
+from devkit.releez.repolish.models import (
+    ReleezProviderContext,
+    ReleezProviderInputs,
+)
 from repolish import Provider
-
-from devkit.releez.repolish.models import ReleezProviderContext, ReleezProviderInputs
+from typing_extensions import override
 
 if TYPE_CHECKING:
     from repolish import TemplateMapping
@@ -44,10 +45,10 @@ class ReleezProvider(Provider[ReleezProviderContext, ReleezProviderInputs]):
         self,
         context: ReleezProviderContext,
     ) -> dict[str, 'str | TemplateMapping | None']:
-        # TODO: the mise `[tasks]` fragment (regen-changelog, release-start,
-        # build, publish) still needs anchor-based merging into the
-        # consumer's `mise.toml` — deferred. Content lives at
-        # resources/templates/mise-fragments/releez-tasks.toml for now.
+        # NOTE: the mise `[tasks]` fragment (regen-changelog, release-start,
+        # build, publish) isn't auto-merged into the consumer's `mise.toml`
+        # (anchor-based TOML merging isn't built yet) — it's hand-copied
+        # from resources/templates/mise-fragments/releez-tasks.toml.
         return {
             'cliff.toml': 'cliff.toml',
             '.github/workflows/finalize-release.yaml': '.github/workflows/finalize-release.yaml',

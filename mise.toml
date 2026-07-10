@@ -19,7 +19,8 @@ shellcheck = "0.11.0"
 "pipx:uv-toolbox" = "0.1.0"
 "pipx:ruff" = "0.14.14"
 "pipx:ty" = "latest"
-"pipx:tbelt" = "0.0.3"
+"pipx:complexipy" = "4.0.2"
+"pipx:pydoclint" = "latest"
 "pipx:zensical" = "0.0.19"
 "pipx:hotdog-werx/releez" = "0.2.0"
 
@@ -28,8 +29,8 @@ postinstall = ["mise run setup-hook"]
 
 # --- devkit-workspace tasks ---
 [tasks]
-format-dprint.run = "uvx tbelt format dprint"
-check-dprint.run = "uvx tbelt check dprint"
+format-dprint.run = "dprint fmt"
+check-dprint.run = "dprint check"
 check-actionlint.run = "actionlint"
 check-repolish.run = "repolish apply --check"
 dev-docs.run = "zensical serve --dev-addr=127.0.0.1:8000"
@@ -37,13 +38,26 @@ build-docs.run = "zensical build --clean"
 clean-docs.run = "rm -rf site/"
 
 # --- devkit-python tasks ---
-format-python.run = "uvx tbelt format python"
-check-python.run = "uvx tbelt check python"
-check-format.run = "uvx ruff format --check --config ruff.toml ."
-check-ty.run = "uvx tbelt check ty"
-check-complexity.run = "uvx tbelt check complexity"
-check-pydoclint.run = "uvx tbelt check pydoclint"
-check-coverage.run = "uvx tbelt check coverage"
+# Format down to 80 cols where it fits; ruff's formatter adds a magic
+# trailing comma to anything it explodes across lines, and skip-magic-
+# trailing-comma=false means that comma then forces the construct to stay
+# exploded even once the width limit widens back out to the real 119-col
+# config on the second pass. ruff check --fix applies COM812 (add missing
+# trailing commas) to anything the formatter didn't already touch.
+format-python.run = """
+ruff format --config ruff.toml --line-length=80 .
+ruff check --config ruff.toml --fix --fix-only .
+ruff format --config ruff.toml .
+"""
+check-python.run = """
+ruff check --config ruff.toml .
+ruff format --config ruff.toml --check .
+"""
+check-format.run = "ruff format --check --config ruff.toml ."
+check-ty.run = "ty check ."
+check-complexity.run = "complexipy -mx 10 ."
+check-pydoclint.run = "pydoclint --style=google --config=pydoclint.toml ."
+check-coverage.run = "pytest -v --tb=short --cov-config=coveragerc.toml --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov"
 
 # --- devkit-releez tasks ---
 regen-changelog.run = "mise exec -- releez changelog regenerate"

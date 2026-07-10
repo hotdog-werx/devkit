@@ -1,13 +1,17 @@
 import tomllib
 
-import yaml
+from devkit.python.repolish.models import PythonProviderContext
+from devkit.python.repolish.provider import (
+    PythonProvider,
+    _detect_project_source,
+)
 from repolish.testing import ProviderTestBed
 
-from devkit.python.repolish.models import PythonProviderContext
-from devkit.python.repolish.provider import PythonProvider, _detect_project_source
 
-
-def test_detect_project_source_falls_back_to_src_without_pyproject(tmp_path, monkeypatch):
+def test_detect_project_source_falls_back_to_src_without_pyproject(
+    tmp_path,
+    monkeypatch,
+):
     monkeypatch.chdir(tmp_path)
     assert _detect_project_source() == 'src'
 
@@ -30,23 +34,14 @@ def test_detect_project_source_reads_module_name_list(tmp_path, monkeypatch):
 
 
 def test_render_all_succeeds():
-    bed = ProviderTestBed(PythonProvider, PythonProviderContext(project_source='src'))
+    bed = ProviderTestBed(
+        PythonProvider,
+        PythonProviderContext(project_source='src'),
+    )
     rendered = bed.render_all()
     assert 'ruff.toml' in rendered
     assert 'coveragerc.toml' in rendered
     assert 'pydoclint.toml' in rendered
-    # toolbelt.yaml.jinja: create_file_mappings references it without the
-    # .jinja suffix (correct for the real CLI, which does that resolution
-    # automatically); render_all()'s dest-mapped path doesn't do the same
-    # fallback, so it's rendered directly by literal on-disk name instead.
-    assert bed.render('toolbelt.yaml.jinja')
-
-
-def test_toolbelt_yaml_renders_project_source_and_valid_yaml():
-    bed = ProviderTestBed(PythonProvider, PythonProviderContext(project_source='uv_toolbox'))
-    content = bed.render('toolbelt.yaml.jinja')
-    parsed = yaml.safe_load(content)
-    assert parsed['variables']['TB_PROJECT_SOURCE'] == 'uv_toolbox'
 
 
 def test_ruff_toml_is_valid_toml():
@@ -60,5 +55,14 @@ def test_no_pyright_or_basedpyright_anywhere_in_rendered_output():
     """pydoclint/ty replaced pyright entirely — regression test for that decision."""
     bed = ProviderTestBed(PythonProvider, PythonProviderContext())
     rendered = bed.render_all()
-    combined = '\n'.join([*rendered.values(), bed.render('toolbelt.yaml.jinja')])
+    combined = '\n'.join(rendered.values())
     assert 'pyright' not in combined.lower()
+
+
+def test_no_toolbelt_references_anywhere_in_rendered_output():
+    """toolbelt/tbelt was removed entirely in favor of native mise tasks."""
+    bed = ProviderTestBed(PythonProvider, PythonProviderContext())
+    rendered = bed.render_all()
+    combined = '\n'.join(rendered.values())
+    assert 'toolbelt' not in combined.lower()
+    assert 'tbelt' not in combined.lower()
