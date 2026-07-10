@@ -37,8 +37,8 @@ def test_finalize_release_uses_self_action_when_enabled():
 def test_finalize_release_uses_mise_tasks_for_build_and_publish():
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='example'))
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert 'build-command: mise run build' in workflow
-    assert 'publish-command: mise run publish' in workflow
+    assert 'build-command: mise run releez:build' in workflow
+    assert 'publish-command: mise run releez:publish' in workflow
 
 
 def test_finalize_release_references_releez_ref_reusable_workflow():

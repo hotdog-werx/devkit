@@ -26,16 +26,16 @@ jobs:
       - name: mise
         uses: jdx/mise-action@v3
       - name: dependencies
-        run: mise run uv-sync
+        run: mise run python:uv-sync
       - name: check-dprint
         if: always() && !cancelled()
-        run: mise run check-dprint
+        run: mise run workspace:dprint:check
       - name: check-actionlint
         if: always() && !cancelled()
-        run: mise run check-actionlint
+        run: mise run workspace:actionlint:check
       - name: check-repolish
         if: always() && !cancelled()
-        run: mise run check-repolish
+        run: mise run workspace:repolish:check
       - name: build-docs
         if: inputs.enable-docs && always() && !cancelled()
-        run: mise run build-docs
+        run: mise run workspace:docs:build

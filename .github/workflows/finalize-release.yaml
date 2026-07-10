@@ -15,8 +15,8 @@ jobs:
     with:
       releez-action-ref: 'hotdog-werx/releez@v1'
       publish-package: false
-      build-command: mise run build
-      publish-command: mise run publish
+      build-command: mise run releez:build
+      publish-command: mise run releez:publish
     secrets: inherit
 
 ## post-release jobs — add your custom jobs here

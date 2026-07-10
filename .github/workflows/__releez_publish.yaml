@@ -10,11 +10,11 @@ on:
       build-command:
         description: 'Command used to set the build version'
         type: string
-        default: mise run build
+        default: mise run releez:build
       publish-command:
         description: 'Command used to publish the built package'
         type: string
-        default: mise run publish
+        default: mise run releez:publish
       publish-package:
         description: 'Whether to build and publish a package to PyPI. Set false for repos with no single installable root package (e.g. a bare workspace container) — the tag/changelog/GitHub Release steps still run.'
         type: boolean

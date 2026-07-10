@@ -1,24 +1,37 @@
 # Reference only — not yet auto-merged into consumer mise.toml via repolish
 # (anchor-based TOML merging is deferred). Copy into the consumer's own
 # mise.toml, adjusting the --cov= target to its actual project source dir.
-[tasks]
+
 # Format down to 80 cols where it fits; ruff's formatter adds a magic
 # trailing comma to anything it explodes across lines, and skip-magic-
 # trailing-comma=false means that comma then forces the construct to stay
 # exploded even once the width limit widens back out to the real 119-col
 # config on the second pass. ruff check --fix applies COM812 (add missing
 # trailing commas) to anything the formatter didn't already touch.
-format-python.run = """
+[tasks."python:format"]
+run = """
 ruff format --config ruff.toml --line-length=80 .
 ruff check --config ruff.toml --fix --fix-only .
 ruff format --config ruff.toml .
 """
-check-python.run = """
+
+[tasks."python:check:ruff"]
+run = """
 ruff check --config ruff.toml .
 ruff format --config ruff.toml --check .
 """
-check-format.run = "ruff format --config ruff.toml --check ."
-check-ty.run = "ty check ."
-check-complexity.run = "complexipy -mx 10 ."
-check-pydoclint.run = "pydoclint --style=google --config=pydoclint.toml ."
-check-coverage.run = "pytest -v --tb=short --cov-config=coveragerc.toml --cov=src --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov tests"
+
+[tasks."python:check:format"]
+run = "ruff format --config ruff.toml --check ."
+
+[tasks."python:check:ty"]
+run = "ty check ."
+
+[tasks."python:check:complexity"]
+run = "complexipy -mx 10 ."
+
+[tasks."python:check:pydoclint"]
+run = "pydoclint --style=google --config=pydoclint.toml ."
+
+[tasks."python:check:coverage"]
+run = "pytest -v --tb=short --cov-config=coveragerc.toml --cov=src --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov tests"

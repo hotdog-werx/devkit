@@ -29,23 +29,23 @@ jobs:
       - name: mise
         uses: jdx/mise-action@v3
       - name: dependencies
-        run: mise run uv-sync
+        run: mise run python:uv-sync
       - name: check-python
         if: always() && !cancelled()
-        run: mise run check-python
+        run: mise run python:check:ruff
       - name: check-format
         if: always() && !cancelled()
-        run: mise run check-format
+        run: mise run python:check:format
       - name: check-ty
         if: always() && !cancelled()
-        run: mise run check-ty
+        run: mise run python:check:ty
       - name: check-complexity
         if: always() && !cancelled()
-        run: mise run check-complexity
+        run: mise run python:check:complexity
       - name: check-pydoclint
         if: always() && !cancelled()
         continue-on-error: true
-        run: mise run check-pydoclint
+        run: mise run python:check:pydoclint
       - name: check-coverage
         if: always() && !cancelled()
-        run: mise run check-coverage
+        run: mise run python:check:coverage

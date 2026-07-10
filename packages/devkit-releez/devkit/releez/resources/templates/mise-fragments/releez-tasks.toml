@@ -1,8 +1,12 @@
-[tasks]
-regen-changelog.run = "mise exec -- releez changelog regenerate"
-build.run = """
+[tasks."releez:changelog:regen"]
+run = "mise exec -- releez changelog regenerate"
+
+[tasks."releez:build"]
+run = """
 rm -rf dist
 uv build
 ls -lh dist/
 """
-publish.run = "uv publish dist/*"
+
+[tasks."releez:publish"]
+run = "uv publish dist/*"

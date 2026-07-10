@@ -41,12 +41,13 @@ providers_order:
 # automatically after every apply so the repo never sits in a state
 # check-dprint would immediately flag as drift.
 #
-# Must be `mise run format-dprint`, not a bare `dprint fmt` — post_process
-# commands run with cwd set to repolish's internal staging directory
-# (.repolish/_/render/repolish), not the project root, and entries aren't
-# shell-interpreted (no $VAR expansion, no command substitution), so a bare
-# dprint can't discover the real dprint.json. `mise run` does its own
-# upward directory search for mise.toml the same way git finds .git, so it
-# still resolves correctly from deep inside the staging directory.
+# Must be `mise run workspace:dprint:format`, not a bare `dprint fmt` —
+# post_process commands run with cwd set to repolish's internal staging
+# directory (.repolish/_/render/repolish), not the project root, and
+# entries aren't shell-interpreted (no $VAR expansion, no command
+# substitution), so a bare dprint can't discover the real dprint.json.
+# `mise run` does its own upward directory search for mise.toml the same
+# way git finds .git, so it still resolves correctly from deep inside the
+# staging directory.
 post_process:
-  - mise run format-dprint
+  - mise run workspace:dprint:format
