@@ -5,4 +5,5 @@ __pycache__/
 .repolish/
 dist/
 .coverage-files/
+.coverage
 site/

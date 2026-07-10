@@ -31,15 +31,21 @@ jobs:
       - name: dependencies
         run: mise run uv-sync
       - name: check-python
+        if: always() && !cancelled()
         run: mise run check-python
       - name: check-format
+        if: always() && !cancelled()
         run: mise run check-format
       - name: check-ty
+        if: always() && !cancelled()
         run: mise run check-ty
       - name: check-complexity
+        if: always() && !cancelled()
         run: mise run check-complexity
       - name: check-pydoclint
-        run: mise run check-pydoclint
+        if: always() && !cancelled()
         continue-on-error: true
+        run: mise run check-pydoclint
       - name: check-coverage
+        if: always() && !cancelled()
         run: mise run check-coverage

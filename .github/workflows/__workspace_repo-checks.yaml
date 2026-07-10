@@ -28,11 +28,14 @@ jobs:
       - name: dependencies
         run: mise run uv-sync
       - name: check-dprint
+        if: always() && !cancelled()
         run: mise run check-dprint
       - name: check-actionlint
+        if: always() && !cancelled()
         run: mise run check-actionlint
       - name: check-repolish
+        if: always() && !cancelled()
         run: mise run check-repolish
       - name: build-docs
-        if: inputs.enable-docs
+        if: inputs.enable-docs && always() && !cancelled()
         run: mise run build-docs

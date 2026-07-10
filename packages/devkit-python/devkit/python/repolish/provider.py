@@ -20,7 +20,7 @@ def _detect_project_source() -> str:
     file is missing, unreadable, malformed, or the key isn't present.
 
     Returns:
-        The detected project source directory, or ``'src'`` as a fallback.
+        str: The detected project source directory, or ``'src'`` as a fallback.
     """
     pyproject_path = Path('pyproject.toml')
     if not pyproject_path.exists():
@@ -56,7 +56,7 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
         """Build the context for this provider.
 
         Returns:
-            A `PythonProviderContext` with `project_source` detected from the
+            PythonProviderContext: With `project_source` detected from the
             consumer's `pyproject.toml`, and all other fields left at their
             Pydantic defaults.
         """
@@ -69,9 +69,13 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
     ) -> dict[str, str | TemplateMapping | None]:
         """Build the destination -> template source mappings.
 
+        Args:
+            context (PythonProviderContext): Unused, kept for hook signature
+                consistency.
+
         Returns:
-            Mapping of destination paths in the consumer repo to template
-            source strings.
+            dict[str, str | TemplateMapping | None]: Mapping of destination
+            paths in the consumer repo to template source strings.
         """
         # NOTE: The mise `[tasks]` fragment for Python tasks (format-python,
         # check-python, check-format, check-ty, check-complexity,
