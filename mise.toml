@@ -33,6 +33,13 @@ format-dprint.run = "dprint fmt"
 check-dprint.run = "dprint check"
 check-actionlint.run = "actionlint"
 check-repolish.run = "repolish apply --check"
+# Formatting is not the template's job — repolish renders content, dprint
+# is what makes it canonical. Chain them so an apply always leaves the repo
+# in a dprint-clean state, regardless of the template's own whitespace.
+repolish-apply.run = """
+repolish apply
+mise run format-dprint
+"""
 dev-docs.run = "zensical serve --dev-addr=127.0.0.1:8000"
 build-docs.run = "zensical build --clean"
 clean-docs.run = "rm -rf site/"
