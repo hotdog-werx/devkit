@@ -37,7 +37,17 @@ run = "complexipy -mx 10 ."
 run = "pydoclint --style=google --config=pydoclint.toml ."
 
 [tasks."python:check:coverage"]
+# default="" is not usable here: mise's usage engine renders an empty-string
+# default as the literal two-character string `''`, not a true empty value,
+# which pytest then treats as a bogus "file or directory not found: ''"
+# positional arg. A non-empty sentinel plus an explicit check works around it.
 usage = '''
-arg "[extra]" var=#true default="" help="Extra pytest arguments, e.g. --ignore tests/action/"
+arg "[extra]" var=#true default="__NONE__" help="Extra pytest arguments, e.g. --ignore tests/action/"
 '''
-run = "pytest -v --tb=short --cov-config=coveragerc.toml --cov=src --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov tests ${usage_extra}"
+run = '''
+if [ "${usage_extra}" = "__NONE__" ]; then
+  pytest -v --tb=short --cov-config=coveragerc.toml --cov=src --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov tests
+else
+  pytest -v --tb=short --cov-config=coveragerc.toml --cov=src --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov tests ${usage_extra}
+fi
+'''
