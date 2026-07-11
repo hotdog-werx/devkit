@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .editorconfig
+dprint.json
 .repolish/
 dist/
 .coverage-files/

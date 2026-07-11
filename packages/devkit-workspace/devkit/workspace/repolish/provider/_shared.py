@@ -13,6 +13,12 @@ class _SharedWorkspaceBehavior(
 
     Member mode gets none of this (see member.py) — consumer repos in this
     org are never repolish workspace *members* themselves.
+
+    Note: these symlinks use an absolute path to their source, so they must
+    never be committed to git (see .gitignore) — every environment (local
+    dev, CI) is expected to run `repolish link` for itself (the
+    workspace:repolish:link mise task), which recreates them fresh and
+    correctly for that machine's checkout path.
     """
 
     @override

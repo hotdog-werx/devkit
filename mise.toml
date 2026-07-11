@@ -43,6 +43,9 @@ run = "actionlint"
 [tasks."workspace:repolish:check"]
 run = "repolish apply --check"
 
+[tasks."workspace:repolish:link"]
+run = "repolish link"
+
 [tasks."workspace:docs:dev"]
 run = "zensical serve --dev-addr=127.0.0.1:8000"
 
@@ -128,6 +131,7 @@ depends = [
 
 [tasks.repo-checks]
 depends = [
+  "workspace:repolish:link",
   "workspace:dprint:check",
   "workspace:actionlint:check",
   "workspace:repolish:check",
