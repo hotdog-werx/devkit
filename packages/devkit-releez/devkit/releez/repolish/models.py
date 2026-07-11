@@ -9,7 +9,6 @@ class ReleezProviderContext(BaseContext):
     releez_ref: str = 'master'
     build_command: str = 'mise run releez:build'
     publish_command: str = 'mise run releez:publish'
-    releez_action_version: str = 'v1'
     use_self_action: bool = False
     # Some consumers (e.g. devkit itself, a uv workspace container with no
     # single installable package at its root) only want tagging/changelog/GH

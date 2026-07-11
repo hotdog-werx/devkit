@@ -3,10 +3,10 @@ name: releez-publish
 on:
   workflow_call:
     inputs:
-      releez-action-ref:
-        description: 'Ref for the hotdog-werx/releez action, e.g. hotdog-werx/releez@v1, or ./ to dogfood the current repo'
-        type: string
-        default: hotdog-werx/releez@v1
+      use-self-action:
+        description: 'Use the local ./ action instead of the published hotdog-werx/releez action — for releez to dogfood itself'
+        type: boolean
+        default: false
       build-command:
         description: 'Command used to set the build version'
         type: string
@@ -39,15 +39,29 @@ jobs:
       - name: Install mise tools
         uses: jdx/mise-action@v4
 
-      - name: Releez finalize
-        id: releez
-        uses: ${{ inputs.releez-action-ref }}
+      # `uses:` can't reference an expression — it must be a static string —
+      # so selecting between the published action and the local self-action
+      # needs two mutually-exclusive steps instead of one dynamic uses:.
+      - name: Releez finalize (published action)
+        id: releez-published
+        if: '!inputs.use-self-action'
+        uses: hotdog-werx/releez@v1
+        with:
+          mode: finalize
+
+      - name: Releez finalize (self action)
+        id: releez-self
+        if: inputs.use-self-action
+        uses: ./
         with:
           mode: finalize
 
       - name: Set build version
         if: inputs.publish-package
-        run: uv version ${{ steps.releez.outputs.pep440-versions }} --frozen
+        run: >-
+          uv version
+          ${{ steps.releez-published.outputs.pep440-versions || steps.releez-self.outputs.pep440-versions }}
+          --frozen
 
       - name: Build package
         if: inputs.publish-package
@@ -63,5 +77,5 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.releez.outputs.release-version }}
-          body: ${{ steps.releez.outputs.release-notes }}
+          tag_name: ${{ steps.releez-published.outputs.release-version || steps.releez-self.outputs.release-version }}
+          body: ${{ steps.releez-published.outputs.release-notes || steps.releez-self.outputs.release-notes }}

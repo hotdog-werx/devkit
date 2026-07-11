@@ -13,6 +13,6 @@ jobs:
   validate-release:
     uses: hotdog-werx/devkit/.github/workflows/__releez_validate-release.yaml@topic/repolish
     with:
-      releez-action-ref: 'hotdog-werx/releez@v1'
+      use-self-action: false
 
 ## post-validate-release jobs — add your custom jobs here

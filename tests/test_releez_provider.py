@@ -1,7 +1,7 @@
 import tomllib
 
 from devkit.releez.repolish.models import ReleezProviderContext
-from devkit.releez.repolish.provider import ReleezProvider
+from devkit.releez.repolish.provider import ReleezProvider, _detect_self_action
 from repolish.testing import ProviderTestBed
 
 # NOTE: create_file_mappings() references these without the .jinja suffix
@@ -14,14 +14,27 @@ VALIDATE_RELEASE_TEMPLATE = '.github/workflows/validate-release.yaml.jinja'
 CLIFF_TOML_TEMPLATE = 'cliff.toml.jinja'
 
 
-def test_finalize_release_uses_published_action_ref_by_default():
+def test_detect_self_action_true_when_action_yaml_present(
+    tmp_path,
+    monkeypatch,
+):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / 'action.yaml').write_text('name: releez\n')
+    assert _detect_self_action() is True
+
+
+def test_detect_self_action_false_without_action_yaml(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    assert _detect_self_action() is False
+
+
+def test_finalize_release_uses_published_action_by_default():
     bed = ProviderTestBed(
         ReleezProvider,
         ReleezProviderContext(repo='uv-toolbox', use_self_action=False),
     )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert "releez-action-ref: 'hotdog-werx/releez@v1'" in workflow
-    assert "releez-action-ref: './'" not in workflow
+    assert 'use-self-action: false' in workflow
 
 
 def test_finalize_release_uses_self_action_when_enabled():
@@ -30,8 +43,7 @@ def test_finalize_release_uses_self_action_when_enabled():
         ReleezProviderContext(repo='releez', use_self_action=True),
     )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert "releez-action-ref: './'" in workflow
-    assert "releez-action-ref: 'hotdog-werx/releez@v1'" not in workflow
+    assert 'use-self-action: true' in workflow
 
 
 def test_finalize_release_uses_mise_tasks_for_build_and_publish():
@@ -86,7 +98,7 @@ def test_lint_pr_title_uses_self_action_when_enabled():
         ReleezProviderContext(use_self_action=True),
     )
     workflow = bed.render(LINT_PR_TITLE_TEMPLATE)
-    assert "releez-action-ref: './'" in workflow
+    assert 'use-self-action: true' in workflow
 
 
 def test_validate_release_references_releez_ref_reusable_workflow():
@@ -98,13 +110,13 @@ def test_validate_release_references_releez_ref_reusable_workflow():
     assert '__releez_validate-release.yaml@topic/repolish' in workflow
 
 
-def test_validate_release_uses_published_action_ref_by_default():
+def test_validate_release_uses_published_action_by_default():
     bed = ProviderTestBed(
         ReleezProvider,
         ReleezProviderContext(use_self_action=False),
     )
     workflow = bed.render(VALIDATE_RELEASE_TEMPLATE)
-    assert "releez-action-ref: 'hotdog-werx/releez@v1'" in workflow
+    assert 'use-self-action: false' in workflow
 
 
 def test_cliff_toml_is_valid_toml_and_preserves_tera_syntax():

@@ -29,7 +29,10 @@ postinstall = ["mise run workspace:setup-hook"]
 
 # --- devkit-workspace tasks ---
 [tasks."workspace:dprint:format"]
-run = "dprint fmt"
+usage = '''
+arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
+'''
+run = "dprint fmt ${usage_files}"
 
 [tasks."workspace:dprint:check"]
 run = "dprint check"
@@ -57,10 +60,13 @@ run = "rm -rf site/"
 # config on the second pass. ruff check --fix applies COM812 (add missing
 # trailing commas) to anything the formatter didn't already touch.
 [tasks."python:format"]
+usage = '''
+arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
+'''
 run = """
-ruff format --config ruff.toml --line-length=80 .
-ruff check --config ruff.toml --fix --fix-only .
-ruff format --config ruff.toml .
+ruff format --config ruff.toml --line-length=80 ${usage_files}
+ruff check --config ruff.toml --fix --fix-only ${usage_files}
+ruff format --config ruff.toml ${usage_files}
 """
 
 [tasks."python:check:ruff"]
@@ -82,7 +88,10 @@ run = "complexipy -mx 10 ."
 run = "pydoclint --style=google --config=pydoclint.toml ."
 
 [tasks."python:check:coverage"]
-run = "pytest -v --tb=short --cov-config=coveragerc.toml --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov"
+usage = '''
+arg "[extra]" var=#true default="" help="Extra pytest arguments, e.g. --ignore tests/action/"
+'''
+run = "pytest -v --tb=short --cov-config=coveragerc.toml --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov ${usage_extra}"
 
 # --- devkit-releez tasks ---
 [tasks."releez:changelog:regen"]

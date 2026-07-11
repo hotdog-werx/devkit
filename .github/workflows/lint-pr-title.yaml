@@ -13,6 +13,6 @@ jobs:
   lint-pr-title:
     uses: hotdog-werx/devkit/.github/workflows/__releez_lint-pr-title.yaml@topic/repolish
     with:
-      releez-action-ref: 'hotdog-werx/releez@v1'
+      use-self-action: false
 
 ## post-lint-pr-title jobs — add your custom jobs here

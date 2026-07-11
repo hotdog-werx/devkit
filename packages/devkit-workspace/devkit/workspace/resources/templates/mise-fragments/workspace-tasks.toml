@@ -1,5 +1,8 @@
 [tasks."workspace:dprint:format"]
-run = "dprint fmt"
+usage = '''
+arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
+'''
+run = "dprint fmt ${usage_files}"
 
 [tasks."workspace:dprint:check"]
 run = "dprint check"

@@ -13,7 +13,7 @@ jobs:
   publish:
     uses: hotdog-werx/devkit/.github/workflows/__releez_publish.yaml@{{ releez_ref }}
     with:
-      releez-action-ref: {% if use_self_action %}'./'{% else %}'hotdog-werx/releez@{{ releez_action_version }}'{% endif %}
+      use-self-action: {{ use_self_action | lower }}
       publish-package: {{ publish_package | lower }}
       build-command: {{ build_command }}
       publish-command: {{ publish_command }}

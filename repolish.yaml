@@ -23,7 +23,6 @@ providers:
   releez:
     provider_root: ./packages/devkit-releez/devkit/releez/resources/templates
     context_overrides:
-      use_self_action: false
       releez_ref: topic/repolish
       # devkit's root pyproject.toml is a bare uv workspace container
       # (package = false, no [build-system]) — there's nothing to build or

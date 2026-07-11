@@ -1,5 +1,6 @@
 import re
 import subprocess
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from devkit.releez.repolish.models import (
@@ -33,12 +34,24 @@ def _detect_repo() -> str:
     return match.group(2)
 
 
+def _detect_self_action() -> bool:
+    """Detect whether this repo hosts its own hotdog-werx/releez action.yaml.
+
+    A repo that has one *is* releez — it should dogfood its own action
+    (`uses: ./`) instead of the published `hotdog-werx/releez@v1`.
+    """
+    return Path('action.yaml').exists() or Path('action.yml').exists()
+
+
 class ReleezProvider(Provider[ReleezProviderContext, ReleezProviderInputs]):
     """Repolish provider for release, publish, and changelog automation."""
 
     @override
     def create_context(self) -> ReleezProviderContext:
-        return ReleezProviderContext(repo=_detect_repo())
+        return ReleezProviderContext(
+            repo=_detect_repo(),
+            use_self_action=_detect_self_action(),
+        )
 
     @override
     def create_file_mappings(
