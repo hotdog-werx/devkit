@@ -42,9 +42,15 @@ depends = [
 # portable only within the machine that created it), so every environment
 # links them fresh on every `mise install`.
 #
+# A single multi-line string (one subprocess, sequential) is used instead of
+# an array of strings (one subprocess per entry) — newer mise releases (seen
+# on 2026.7.5 in CI, not on 2026.5.15 locally) only ran the last array entry,
+# silently dropping the earlier ones. The multi-line-string form isn't
+# subject to that per-entry dispatch at all, so it isn't exposed to the bug.
+#
 # [hooks]
-# postinstall = [
-#   "uv-toolbox install",
-#   "uv-toolbox exec --env repolish -- repolish link",
-#   "mise run workspace:setup-hook",
-# ]
+# postinstall = """
+# uv-toolbox install
+# uv-toolbox exec --env repolish -- repolish link
+# mise run workspace:setup-hook
+# """

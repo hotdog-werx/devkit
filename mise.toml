@@ -22,9 +22,8 @@ shellcheck = "0.11.0"
 "pipx:complexipy" = "4.0.2"
 "pipx:pydoclint" = "latest"
 "pipx:zensical" = "0.0.19"
-"pipx:hotdog-werx/releez" = "0.2.0"
+"pipx:releez" = "1.0.1"
 
-[hooks]
 # repolish lives only in the uv-toolbox-managed "repolish" env (not devkit's
 # own .venv, not a mise-managed tool) — uv-toolbox install provisions it
 # before repolish link can use it. repolish link then materializes
@@ -32,11 +31,19 @@ shellcheck = "0.11.0"
 # committed to git (their symlink source is an absolute path, portable only
 # within the machine that created it), so every environment links them
 # fresh on every `mise install`.
-postinstall = [
-  "uv-toolbox install",
-  "uv-toolbox exec --env repolish -- repolish link",
-  "mise run workspace:setup-hook",
-]
+#
+# [[hooks.postinstall]] (array-of-tables, one entry per subprocess) is used
+# instead of a flat postinstall = ["...", "..."] array — newer mise releases
+# (2026.7.5 in CI, not 2026.5.15 locally) silently ran only the last entry
+# of the flat-array form.
+[[hooks.postinstall]]
+run = "uv-toolbox install"
+
+[[hooks.postinstall]]
+run = "uv-toolbox exec --env repolish -- repolish link"
+
+[[hooks.postinstall]]
+run = "mise run workspace:setup-hook"
 
 # --- devkit-workspace tasks ---
 [tasks."workspace:dprint:format"]
