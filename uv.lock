@@ -153,9 +153,6 @@ dev = [
     { name = "pytest-mock" },
     { name = "ty" },
 ]
-repolish = [
-    { name = "repolish" },
-]
 
 [package.metadata]
 
@@ -166,7 +163,6 @@ dev = [
     { name = "pytest-mock", specifier = ">=3.14.1" },
     { name = "ty", specifier = ">=0.0.16" },
 ]
-repolish = [{ name = "repolish", specifier = ">=1.0.0" }]
 
 [[package]]
 name = "devkit-python"

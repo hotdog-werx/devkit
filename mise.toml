@@ -25,12 +25,18 @@ shellcheck = "0.11.0"
 "pipx:hotdog-werx/releez" = "0.2.0"
 
 [hooks]
-# repolish link materializes provider-resource symlinks (.editorconfig,
-# dprint.json) — these are never committed to git (their symlink source is
-# an absolute path, portable only within the machine that created it), so
-# every environment links them fresh on every `mise install` (which
-# jdx/mise-action already runs in CI, so no separate CI step is needed).
-postinstall = ["repolish link", "mise run workspace:setup-hook"]
+# repolish lives only in the uv-toolbox-managed "repolish" env (not devkit's
+# own .venv, not a mise-managed tool) — uv-toolbox install provisions it
+# before repolish link can use it. repolish link then materializes
+# provider-resource symlinks (.editorconfig, dprint.json) — these are never
+# committed to git (their symlink source is an absolute path, portable only
+# within the machine that created it), so every environment links them
+# fresh on every `mise install`.
+postinstall = [
+  "uv-toolbox install",
+  "uv-toolbox exec --env repolish -- repolish link",
+  "mise run workspace:setup-hook",
+]
 
 # --- devkit-workspace tasks ---
 [tasks."workspace:dprint:format"]
@@ -46,7 +52,10 @@ run = "dprint check"
 run = "actionlint"
 
 [tasks."workspace:repolish:check"]
-run = "repolish apply --check"
+run = "uv-toolbox exec --env repolish -- repolish apply --check"
+
+[tasks."workspace:repolish:link"]
+run = "uv-toolbox exec --env repolish -- repolish link"
 
 [tasks."workspace:docs:dev"]
 run = "zensical serve --dev-addr=127.0.0.1:8000"

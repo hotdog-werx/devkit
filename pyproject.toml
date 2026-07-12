@@ -20,6 +20,3 @@ dev = [
   "pytest-cov >= 6.2.1",
   "ty >= 0.0.16",
 ]
-repolish = [
-  "repolish >= 1.0.0",
-]

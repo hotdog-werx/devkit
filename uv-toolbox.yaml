@@ -5,3 +5,11 @@ environments:
       complexipy==6.0.1
       zensical==0.0.47
       releez==1.0.1
+  - name: repolish
+    requirements: |
+      repolish
+      -e ./packages/devkit-workspace
+      -e ./packages/devkit-python
+      -e ./packages/devkit-releez
+    executables:
+      - repolish

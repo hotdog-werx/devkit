@@ -9,6 +9,11 @@ on:
       - edited
       - synchronize
 
+# A reusable workflow can never exceed the permissions granted here by the
+# calling (this) workflow, regardless of what it declares for itself.
+permissions:
+  contents: read
+
 jobs:
   lint-pr-title:
     uses: hotdog-werx/devkit/.github/workflows/__releez_lint-pr-title.yaml@topic/repolish

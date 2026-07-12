@@ -9,6 +9,12 @@ on:
       - edited
       - synchronize
 
+# A reusable workflow can never exceed the permissions granted here by the
+# calling (this) workflow, regardless of what it declares for itself.
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
   validate-release:
     uses: hotdog-werx/devkit/.github/workflows/__releez_validate-release.yaml@{{ releez_ref }}
