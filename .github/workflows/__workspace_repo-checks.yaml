@@ -27,13 +27,6 @@ jobs:
         uses: jdx/mise-action@v3
       - name: dependencies
         run: mise run python:uv-sync
-      - name: link
-        # Materializes provider-resource symlinks (.editorconfig,
-        # dprint.json) via the repolish linkers — these are never
-        # committed to git (their symlink source is an absolute path,
-        # portable only within the machine that created it), so every
-        # environment, CI included, links them fresh for itself.
-        run: mise run workspace:repolish:link
       - name: check-dprint
         if: always() && !cancelled()
         run: mise run workspace:dprint:check
