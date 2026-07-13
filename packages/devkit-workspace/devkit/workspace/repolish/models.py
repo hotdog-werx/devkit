@@ -11,6 +11,8 @@ class WorkspaceProviderContext(BaseContext):
     python_ref: str = 'master'
     enable_docs: bool = False
     has_python: bool = False
+    python_operating_systems: str = '["ubuntu-latest"]'
+    python_codecov: bool = False
 
 
 class WorkspaceProviderInputs(BaseInputs):

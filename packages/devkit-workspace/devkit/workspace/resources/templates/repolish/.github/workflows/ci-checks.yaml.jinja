@@ -15,6 +15,10 @@ jobs:
 {% if has_python %}
   python-checks:
     uses: hotdog-werx/devkit/.github/workflows/__python_python-checks.yaml@{{ python_ref }}
+    with:
+      operating-systems: '{{ python_operating_systems }}'
+      codecov: {{ python_codecov | lower }}
+    secrets: inherit
 {% endif %}
 ## repolish-keep-block[custom-ci-checks]: start="## start-custom-ci-checks" end="## end-custom-ci-checks"
 ## start-custom-ci-checks

@@ -137,6 +137,26 @@ def test_ci_checks_includes_python_checks_job_when_has_python_true(
     assert 'python-checks:' in content
 
 
+def test_ci_checks_passes_operating_systems_and_codecov_to_python_checks():
+    """python_operating_systems/python_codecov reach the python-checks job's inputs.
+
+    Lets a consumer opt into a Windows/macOS matrix and Codecov upload
+    without needing its own custom tests job duplicating check-coverage.
+    """
+    bed = ProviderTestBed(
+        WorkspaceProvider,
+        WorkspaceProviderContext(
+            has_python=True,
+            python_operating_systems='["ubuntu-latest", "windows-latest"]',
+            python_codecov=True,
+        ),
+    )
+    content = bed.render(CI_CHECKS_TEMPLATE)
+    assert 'operating-systems: \'["ubuntu-latest", "windows-latest"]\'' in content
+    assert 'codecov: true' in content
+    assert 'secrets: inherit' in content
+
+
 def test_ci_checks_references_independent_refs_per_namespace(
     bed_docs_and_python,
 ):
