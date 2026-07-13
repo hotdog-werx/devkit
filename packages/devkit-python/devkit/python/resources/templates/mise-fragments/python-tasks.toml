@@ -8,13 +8,17 @@
 # exploded even once the width limit widens back out to the real 119-col
 # config on the second pass. ruff check --fix applies COM812 (add missing
 # trailing commas) to anything the formatter didn't already touch.
+#
+# COM812 is ignored in ruff.toml itself (it conflicts with the formatter,
+# which warns on every `ruff format` invocation if it's enabled there) and
+# re-enabled only for this one fix-only pass via --extend-select.
 [tasks."python:format"]
 usage = '''
 arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
 '''
 run = """
 ruff format --config ruff.toml --line-length=80 ${usage_files}
-ruff check --config ruff.toml --fix --fix-only ${usage_files}
+ruff check --config ruff.toml --extend-select COM812 --fix --fix-only ${usage_files}
 ruff format --config ruff.toml ${usage_files}
 """
 

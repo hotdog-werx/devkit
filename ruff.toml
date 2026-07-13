@@ -2,6 +2,7 @@ lint.external = ["CCR", "DAR", "DOC", "WPS"]
 
 lint.select = ["ALL"]
 lint.ignore = [
+  "COM812", # Conflicts with the formatter; python:format applies it explicitly via --extend-select on the fix-only pass instead
   "D100", # No docstrings for modules
   "D104", # No docstrings for packages
   "D107", # Allow __init__ to not have docstrings, conflicts with pydoclint
