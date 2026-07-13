@@ -18,6 +18,7 @@ from repolish.testing import ProviderTestBed
 
 
 def test_workspace_ci_checks_anchor_marker_is_replaceable():
+    """The additional-ci-jobs anchor in ci-checks.yaml accepts a real substitution."""
     bed = ProviderTestBed(
         WorkspaceProvider,
         WorkspaceProviderContext(has_python=True, enable_docs=False),
@@ -40,6 +41,7 @@ def test_workspace_ci_checks_anchor_marker_is_replaceable():
 
 
 def test_workspace_deploy_docs_anchor_marker_is_replaceable():
+    """The additional-deploy-jobs anchor in deploy-docs.yaml accepts a real substitution."""
     bed = ProviderTestBed(
         WorkspaceProvider,
         WorkspaceProviderContext(enable_docs=True),
@@ -57,6 +59,7 @@ def test_workspace_deploy_docs_anchor_marker_is_replaceable():
 
 
 def test_releez_finalize_release_anchor_marker_is_replaceable():
+    """The additional-jobs anchor in finalize-release.yaml accepts a real substitution."""
     bed = ProviderTestBed(
         ReleezProvider,
         ReleezProviderContext(repo='example', use_self_action=False),
@@ -74,6 +77,7 @@ def test_releez_finalize_release_anchor_marker_is_replaceable():
 
 
 def test_releez_lint_pr_title_anchor_marker_is_replaceable():
+    """The additional-lint-pr-title-jobs anchor in lint-pr-title.yaml accepts a real substitution."""
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='example'))
     content = bed.render('.github/workflows/lint-pr-title.yaml.jinja')
 
@@ -88,6 +92,7 @@ def test_releez_lint_pr_title_anchor_marker_is_replaceable():
 
 
 def test_releez_validate_release_anchor_marker_is_replaceable():
+    """The additional-validate-release-jobs anchor in validate-release.yaml accepts a real substitution."""
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='example'))
     content = bed.render('.github/workflows/validate-release.yaml.jinja')
 

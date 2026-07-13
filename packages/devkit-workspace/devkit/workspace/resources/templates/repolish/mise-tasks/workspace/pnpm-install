@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-if [ -f pnpm-lock.yaml ]; then
-  pnpm install
-else
-  echo "skipping pnpm install, no pnpm-lock.yaml found"
-fi

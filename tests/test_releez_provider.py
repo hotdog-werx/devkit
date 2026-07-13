@@ -18,17 +18,20 @@ def test_detect_self_action_true_when_action_yaml_present(
     tmp_path,
     monkeypatch,
 ):
+    """A repo with its own action.yaml is releez itself — dogfood the local action."""
     monkeypatch.chdir(tmp_path)
     (tmp_path / 'action.yaml').write_text('name: releez\n')
     assert _detect_self_action() is True
 
 
 def test_detect_self_action_false_without_action_yaml(tmp_path, monkeypatch):
+    """A repo with no action.yaml is a consumer — use the published action."""
     monkeypatch.chdir(tmp_path)
     assert _detect_self_action() is False
 
 
 def test_finalize_release_uses_published_action_by_default():
+    """use_self_action=False renders the published-action input as false."""
     bed = ProviderTestBed(
         ReleezProvider,
         ReleezProviderContext(repo='uv-toolbox', use_self_action=False),
@@ -38,6 +41,7 @@ def test_finalize_release_uses_published_action_by_default():
 
 
 def test_finalize_release_uses_self_action_when_enabled():
+    """use_self_action=True renders the self-action input as true."""
     bed = ProviderTestBed(
         ReleezProvider,
         ReleezProviderContext(repo='releez', use_self_action=True),
@@ -46,14 +50,16 @@ def test_finalize_release_uses_self_action_when_enabled():
     assert 'use-self-action: true' in workflow
 
 
-def test_finalize_release_uses_mise_tasks_for_build_and_publish():
+def test_finalize_release_uses_direct_uv_commands_for_build_and_publish():
+    """No mise task wrappers: uv build/publish need no indirection, and releez itself handles tag-pulling now."""
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='example'))
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert 'build-command: mise run releez:build' in workflow
-    assert 'publish-command: mise run releez:publish' in workflow
+    assert 'build-command: rm -rf dist && uv build' in workflow
+    assert 'publish-command: uv publish dist/*' in workflow
 
 
 def test_finalize_release_references_releez_ref_reusable_workflow():
+    """The finalize-release workflow pins the reusable workflow to releez_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
         ReleezProviderContext(releez_ref='topic/repolish'),
@@ -63,6 +69,7 @@ def test_finalize_release_references_releez_ref_reusable_workflow():
 
 
 def test_finalize_release_publish_package_defaults_true():
+    """publish_package defaults true — most consumers have a package to publish."""
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext())
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert 'publish-package: true' in workflow
@@ -84,6 +91,7 @@ def test_finalize_release_publish_package_can_be_disabled():
 
 
 def test_lint_pr_title_references_releez_ref_reusable_workflow():
+    """The lint-pr-title workflow pins the reusable workflow to releez_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
         ReleezProviderContext(releez_ref='topic/repolish'),
@@ -93,6 +101,7 @@ def test_lint_pr_title_references_releez_ref_reusable_workflow():
 
 
 def test_lint_pr_title_uses_self_action_when_enabled():
+    """use_self_action=True renders the self-action input as true."""
     bed = ProviderTestBed(
         ReleezProvider,
         ReleezProviderContext(use_self_action=True),
@@ -102,6 +111,7 @@ def test_lint_pr_title_uses_self_action_when_enabled():
 
 
 def test_validate_release_references_releez_ref_reusable_workflow():
+    """The validate-release workflow pins the reusable workflow to releez_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
         ReleezProviderContext(releez_ref='topic/repolish'),
@@ -111,6 +121,7 @@ def test_validate_release_references_releez_ref_reusable_workflow():
 
 
 def test_validate_release_uses_published_action_by_default():
+    """use_self_action=False renders the published-action input as false."""
     bed = ProviderTestBed(
         ReleezProvider,
         ReleezProviderContext(use_self_action=False),
@@ -142,6 +153,7 @@ def test_cliff_toml_is_valid_toml_and_preserves_tera_syntax():
 
 
 def test_no_pyright_references():
+    """pydoclint/ty replaced pyright entirely — regression test for that decision."""
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext())
     rendered = bed.render_all()
     combined = '\n'.join(

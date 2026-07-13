@@ -7,8 +7,8 @@ class ReleezProviderContext(BaseContext):
     owner: str = 'hotdog-werx'
     repo: str = ''
     releez_ref: str = 'master'
-    build_command: str = 'mise run releez:build'
-    publish_command: str = 'mise run releez:publish'
+    build_command: str = 'rm -rf dist && uv build'
+    publish_command: str = 'uv publish dist/*'
     use_self_action: bool = False
     # Some consumers (e.g. devkit itself, a uv workspace container with no
     # single installable package at its root) only want tagging/changelog/GH

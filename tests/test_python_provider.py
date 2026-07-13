@@ -17,11 +17,13 @@ def test_detect_project_source_falls_back_to_src_without_pyproject(
     tmp_path,
     monkeypatch,
 ):
+    """With no pyproject.toml at all, the fallback source dir is 'src'."""
     monkeypatch.chdir(tmp_path)
     assert _detect_project_source() == 'src'
 
 
 def test_detect_project_source_reads_module_name_string(tmp_path, monkeypatch):
+    """module-name as a bare string is used directly as the source dir."""
     monkeypatch.chdir(tmp_path)
     (tmp_path / 'pyproject.toml').write_text(
         '[tool.uv.build-backend]\nmodule-name = "releez"\n',
@@ -41,11 +43,12 @@ def test_detect_project_source_reads_module_name_list(tmp_path, monkeypatch):
 def test_render_all_excludes_static_configs():
     """Static configs are referenced directly, not rendered as copies.
 
-    ruff.toml/pydoclint.toml are static and referenced directly from the
-    provider's linked resources directory instead of being rendered as
+    ruff.toml/pydoclint.toml/uv-sync are static and referenced directly from
+    the provider's linked resources directory instead of being rendered as
     physical copies; coveragerc.toml doesn't exist at all anymore (folded
-    into the consumer's own pyproject.toml). mise-tasks/python/uv-sync is
-    unrelated to this and is still expected (auto-discovered).
+    into the consumer's own pyproject.toml). check-coverage is unrelated to
+    this and is still expected (it needs this repo's own project_source, so
+    it's rendered per-repo rather than referenced in place).
     """
     bed = ProviderTestBed(
         PythonProvider,
@@ -55,10 +58,12 @@ def test_render_all_excludes_static_configs():
     assert 'ruff.toml' not in rendered
     assert 'coveragerc.toml' not in rendered
     assert 'pydoclint.toml' not in rendered
-    assert 'mise-tasks/python/uv-sync' in rendered
+    assert 'mise-tasks/python/uv-sync' not in rendered
+    assert 'mise-tasks/python/check-coverage' in rendered
 
 
 def test_ruff_toml_is_valid_toml():
+    """The shared ruff.toml parses and sets the expected docstring convention."""
     parsed = tomllib.loads(_RUFF_TOML)
     assert parsed['lint']['pydocstyle']['convention'] == 'google'
 

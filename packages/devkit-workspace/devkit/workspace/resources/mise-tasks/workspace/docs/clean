@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+"""Remove the built docs site directory."""
+
+import shutil
+
+if __name__ == '__main__':
+    shutil.rmtree('site', ignore_errors=True)

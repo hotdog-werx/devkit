@@ -45,95 +45,37 @@ run = "uv-toolbox exec --env repolish -- repolish link"
 [[hooks.postinstall]]
 run = "mise run workspace:setup-hook"
 
-# --- devkit-workspace tasks ---
-[tasks."workspace:dprint:format"]
-usage = '''
-arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
-'''
-run = "dprint fmt ${usage_files}"
+# devkit dogfoods its own providers locally (provider_root:, not installed
+# packages), so tasks are included straight from each package's resources/
+# instead of through the `.repolish/devkit-<name>/` symlink a real consumer
+# would use. "mise-tasks" (the default) is kept explicitly — task_config
+# includes *replaces* the default file-task dirs rather than adding to
+# them — since python:check:coverage is still rendered per-repo there (it
+# needs this repo's own project_source, so it can't be referenced in place
+# like everything else).
+[task_config]
+includes = [
+  "mise-tasks",
+  "packages/devkit-workspace/devkit/workspace/resources/mise-tasks",
+  "packages/devkit-workspace/devkit/workspace/resources/mise-tasks.toml",
+  "packages/devkit-python/devkit/python/resources/mise-tasks",
+]
 
-[tasks."workspace:dprint:check"]
-run = "dprint check"
-
-[tasks."workspace:actionlint:check"]
-run = "actionlint"
-
-[tasks."workspace:repolish:check"]
-run = "uv-toolbox exec --env repolish -- repolish apply --check"
-
-[tasks."workspace:repolish:link"]
-run = "uv-toolbox exec --env repolish -- repolish link"
-
-[tasks."workspace:docs:dev"]
-run = "zensical serve --dev-addr=127.0.0.1:8000"
-
-[tasks."workspace:docs:build"]
-run = "zensical build --clean"
-
-[tasks."workspace:docs:clean"]
-run = "rm -rf site/"
-
-# --- devkit-python tasks ---
-# Format down to 80 cols where it fits; ruff's formatter adds a magic
-# trailing comma to anything it explodes across lines, and skip-magic-
-# trailing-comma=false means that comma then forces the construct to stay
-# exploded even once the width limit widens back out to the real 119-col
-# config on the second pass. ruff check --fix applies COM812 (add missing
-# trailing commas) to anything the formatter didn't already touch.
-#
-# COM812 is ignored in ruff.toml itself (it conflicts with the formatter,
-# which warns on every `ruff format` invocation if it's enabled there) and
-# re-enabled only for this one fix-only pass via --extend-select.
-[tasks."python:format"]
-usage = '''
-arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
-'''
-run = """
-ruff format --line-length=80 ${usage_files}
-ruff check --extend-select COM812 --fix --fix-only ${usage_files}
-ruff format ${usage_files}
-"""
-
-[tasks."python:check:ruff"]
-run = """
-ruff check .
-ruff format --check .
-"""
-
-[tasks."python:check:format"]
-run = "ruff format --check ."
-
-[tasks."python:check:ty"]
-run = "ty check ."
-
-[tasks."python:check:complexity"]
-run = "complexipy -mx 10 ."
-
-[tasks."python:check:pydoclint"]
-# devkit dogfoods devkit-python locally (provider_root:, not an installed
-# package), so there's no `.repolish/devkit-python` symlink to reference —
-# point directly at the package's own config instead.
-run = "pydoclint --style=google --config=./packages/devkit-python/devkit/python/resources/configs/pydoclint.toml ."
-
+# python:check:coverage is normally rendered per-repo by devkit-python's
+# provider (it needs a real project_source), but `repolish apply` in root
+# mode (devkit self-dogfooding) skips auto-discovered files entirely, so
+# devkit needs its own copy here instead.
 [tasks."python:check:coverage"]
-# default="" is not usable here: mise's usage engine renders an empty-string
-# default as the literal two-character string `''`, not a true empty value,
-# which pytest then treats as a bogus "file or directory not found: ''"
-# positional arg. A non-empty sentinel plus an explicit check works around it.
 usage = '''
-arg "[extra]" var=#true default="__NONE__" help="Extra pytest arguments, e.g. --ignore tests/action/"
+arg "[extra]" var=#true default="__NONE__" help="Extra pytest arguments"
 '''
 run = '''
 if [ "${usage_extra}" = "__NONE__" ]; then
-  pytest -v --tb=short --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov
+  pytest -v --tb=short -m "not slow" --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov
 else
-  pytest -v --tb=short --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov ${usage_extra}
+  pytest -v --tb=short -m "not slow" --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov ${usage_extra}
 fi
 '''
-
-# --- devkit-releez tasks ---
-[tasks."releez:changelog:regen"]
-run = "mise exec -- releez changelog regenerate"
 
 [tasks.format]
 depends = ["python:format", "workspace:dprint:format"]

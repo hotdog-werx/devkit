@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+"""Run ty's type checker."""
+
+import subprocess
+import sys
+
+if __name__ == '__main__':
+    sys.exit(subprocess.run(('ty', 'check', '.'), check=False).returncode)

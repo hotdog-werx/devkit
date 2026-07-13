@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+#USAGE arg "[extra]" var=#true default="__NONE__" help="Extra pytest arguments"
+"""Run pytest with coverage against this project's source directory.
+
+The --cov target is baked in at repolish-apply time from this repo's own
+detected project source — this file is rendered per-repo (not referenced
+in place), unlike the other python: tasks, because that target genuinely
+differs per consumer.
+
+Excludes tests marked `@pytest.mark.slow` by default (e.g. releez's
+act-driven action tests) — a repo with no such marked tests just gets a
+no-op deselect. This keeps every consumer's coverage invocation identical;
+repos with a genuinely separate slow-test job run it directly (e.g. `pytest
+-m slow tests/action/`) rather than overriding this task's arguments.
+"""
+
+import os
+import subprocess
+import sys
+
+if __name__ == '__main__':
+    # default="" is not usable here: mise's usage engine renders an
+    # empty-string default as the literal two-character string `''`, not a
+    # true empty value, which pytest then treats as a bogus "file or
+    # directory not found: ''" positional arg. A non-empty sentinel plus an
+    # explicit check works around it.
+    extra = os.environ.get('usage_extra', '__NONE__')
+    extra_args = [] if extra == '__NONE__' else extra.split()
+    cmd = [
+        'pytest', '-v', '--tb=short',
+        '-m', 'not slow',
+        '--cov={{ project_source }}',
+        '--cov-report=term-missing',
+        '--cov-report=html:.coverage-files/htmlcov',
+        'tests',
+        *extra_args,
+    ]
+    sys.exit(subprocess.run(cmd, check=False).returncode)

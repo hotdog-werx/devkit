@@ -24,6 +24,7 @@ CI_CHECKS_TEMPLATE = '.github/workflows/ci-checks.yaml.jinja'
 
 @pytest.fixture
 def bed_no_docs_no_python() -> ProviderTestBed:
+    """A workspace provider test bed with docs and Python support both disabled."""
     return ProviderTestBed(
         WorkspaceProvider,
         WorkspaceProviderContext(
@@ -36,6 +37,7 @@ def bed_no_docs_no_python() -> ProviderTestBed:
 
 @pytest.fixture
 def bed_docs_and_python() -> ProviderTestBed:
+    """A workspace provider test bed with docs and Python support both enabled."""
     return ProviderTestBed(
         WorkspaceProvider,
         WorkspaceProviderContext(
@@ -51,6 +53,7 @@ def bed_docs_and_python() -> ProviderTestBed:
 
 
 def test_create_context_detects_owner_repo_from_git_remote(mocker):
+    """owner/repo are parsed from `git remote get-url origin`."""
     mocker.patch(
         'devkit.workspace.repolish.provider.subprocess.check_output',
         return_value='git@github.com:hotdog-werx/devkit.git\n',
@@ -61,6 +64,7 @@ def test_create_context_detects_owner_repo_from_git_remote(mocker):
 
 
 def test_create_context_falls_back_when_no_git_remote(mocker):
+    """With no git remote (or the command failing), owner/repo fall back to empty."""
     mocker.patch(
         'devkit.workspace.repolish.provider.subprocess.check_output',
         side_effect=subprocess.CalledProcessError(1, 'git'),
@@ -71,11 +75,13 @@ def test_create_context_falls_back_when_no_git_remote(mocker):
 
 
 def test_file_mappings_omit_deploy_docs_when_disabled(bed_no_docs_no_python):
+    """enable_docs=False maps deploy-docs.yaml to None (not rendered)."""
     mappings = bed_no_docs_no_python.file_mappings()
     assert mappings[DEPLOY_DOCS] is None
 
 
 def test_file_mappings_include_deploy_docs_when_enabled(bed_docs_and_python):
+    """enable_docs=True maps deploy-docs.yaml to itself (rendered)."""
     mappings = bed_docs_and_python.file_mappings()
     assert mappings[DEPLOY_DOCS] == DEPLOY_DOCS
 
@@ -117,6 +123,7 @@ def test_editorconfig_and_dprint_json_are_symlinked_not_rendered(handler_cls):
 def test_ci_checks_omits_python_checks_job_when_has_python_false(
     bed_no_docs_no_python,
 ):
+    """has_python=False renders ci-checks.yaml with no python-checks job."""
     content = bed_no_docs_no_python.render(CI_CHECKS_TEMPLATE)
     assert 'python-checks:' not in content
     assert 'repo-checks:' in content
@@ -125,6 +132,7 @@ def test_ci_checks_omits_python_checks_job_when_has_python_false(
 def test_ci_checks_includes_python_checks_job_when_has_python_true(
     bed_docs_and_python,
 ):
+    """has_python=True renders ci-checks.yaml with a python-checks job."""
     content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
     assert 'python-checks:' in content
 
@@ -145,16 +153,19 @@ def test_ci_checks_references_independent_refs_per_namespace(
 
 
 def test_enable_docs_passed_through_to_repo_checks_input(bed_docs_and_python):
+    """enable_docs=True passes enable-docs: true to the repo-checks job input."""
     content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
     assert 'enable-docs: true' in content
 
 
 def test_enable_docs_false_passed_through(bed_no_docs_no_python):
+    """enable_docs=False passes enable-docs: false to the repo-checks job input."""
     content = bed_no_docs_no_python.render(CI_CHECKS_TEMPLATE)
     assert 'enable-docs: false' in content
 
 
 def test_deploy_docs_references_workspace_ref(bed_docs_and_python):
+    """deploy-docs.yaml pins the reusable workflow to workspace_ref."""
     content = bed_docs_and_python.render(
         '.github/workflows/deploy-docs.yaml.jinja',
     )

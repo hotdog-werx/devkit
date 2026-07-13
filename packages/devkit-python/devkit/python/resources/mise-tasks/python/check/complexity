@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+"""Run complexipy's cognitive complexity checker."""
+
+import subprocess
+import sys
+
+if __name__ == '__main__':
+    sys.exit(subprocess.run(('complexipy', '-mx', '10', '.'), check=False).returncode)

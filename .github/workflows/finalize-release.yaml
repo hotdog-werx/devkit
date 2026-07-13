@@ -15,8 +15,8 @@ jobs:
     with:
       use-self-action: false
       publish-package: false
-      build-command: mise run releez:build
-      publish-command: mise run releez:publish
+      build-command: rm -rf dist && uv build
+      publish-command: uv publish dist/*
     secrets: inherit
 
 ## post-release jobs — add your custom jobs here

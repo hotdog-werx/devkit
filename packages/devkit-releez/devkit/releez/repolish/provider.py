@@ -58,10 +58,10 @@ class ReleezProvider(Provider[ReleezProviderContext, ReleezProviderInputs]):
         self,
         context: ReleezProviderContext,
     ) -> dict[str, 'str | TemplateMapping | None']:
-        # NOTE: the mise `[tasks]` fragment (regen-changelog, release-start,
-        # build, publish) isn't auto-merged into the consumer's `mise.toml`
-        # (anchor-based TOML merging isn't built yet) — it's hand-copied
-        # from resources/templates/mise-fragments/releez-tasks.toml.
+        # No mise tasks: releez itself already handles tag-pulling, and
+        # `uv build`/`uv publish` (see build_command/publish_command) need
+        # no wrapper — running them directly is simpler than maintaining a
+        # mise task that just forwards to the same command.
         return {
             'cliff.toml': 'cliff.toml',
             '.github/workflows/finalize-release.yaml': '.github/workflows/finalize-release.yaml',
