@@ -1,6 +1,12 @@
 # Reference only — not yet auto-merged into consumer mise.toml via repolish
 # (anchor-based TOML merging is deferred). Copy into the consumer's own
 # mise.toml, adjusting the --cov= target to its actual project source dir.
+#
+# ruff/pydoclint/coverage config all live in the consumer's own
+# pyproject.toml (see resources/templates/pyproject-fragments/python.toml)
+# or, for pydoclint, in the whole-resources-directory symlink `repolish
+# link` creates — none of these tools need an explicit --config flag here
+# except pydoclint, which has no pyproject.toml-native config support.
 
 # Format down to 80 cols where it fits; ruff's formatter adds a magic
 # trailing comma to anything it explodes across lines, and skip-magic-
@@ -17,19 +23,19 @@ usage = '''
 arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
 '''
 run = """
-ruff format --config ruff.toml --line-length=80 ${usage_files}
-ruff check --config ruff.toml --extend-select COM812 --fix --fix-only ${usage_files}
-ruff format --config ruff.toml ${usage_files}
+ruff format --line-length=80 ${usage_files}
+ruff check --extend-select COM812 --fix --fix-only ${usage_files}
+ruff format ${usage_files}
 """
 
 [tasks."python:check:ruff"]
 run = """
-ruff check --config ruff.toml .
-ruff format --config ruff.toml --check .
+ruff check .
+ruff format --check .
 """
 
 [tasks."python:check:format"]
-run = "ruff format --config ruff.toml --check ."
+run = "ruff format --check ."
 
 [tasks."python:check:ty"]
 run = "ty check ."
@@ -38,7 +44,7 @@ run = "ty check ."
 run = "complexipy -mx 10 ."
 
 [tasks."python:check:pydoclint"]
-run = "pydoclint --style=google --config=pydoclint.toml ."
+run = "pydoclint --style=google --config=.repolish/devkit-python/configs/pydoclint.toml ."
 
 [tasks."python:check:coverage"]
 # default="" is not usable here: mise's usage engine renders an empty-string
@@ -50,8 +56,8 @@ arg "[extra]" var=#true default="__NONE__" help="Extra pytest arguments, e.g. --
 '''
 run = '''
 if [ "${usage_extra}" = "__NONE__" ]; then
-  pytest -v --tb=short --cov-config=coveragerc.toml --cov=src --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov tests
+  pytest -v --tb=short --cov=src --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov tests
 else
-  pytest -v --tb=short --cov-config=coveragerc.toml --cov=src --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov tests ${usage_extra}
+  pytest -v --tb=short --cov=src --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov tests ${usage_extra}
 fi
 '''

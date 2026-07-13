@@ -74,8 +74,14 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
                 consistency.
 
         Returns:
-            dict[str, str | TemplateMapping | None]: Mapping of destination
-            paths in the consumer repo to template source strings.
+            dict[str, str | TemplateMapping | None]: Empty — ruff.toml and
+            pydoclint.toml are static (no per-repo templating) and are
+            referenced directly from `.repolish/devkit-python/configs/` (the
+            whole-resources-directory symlink `repolish link` already
+            creates) instead of being rendered as physical copies.
+            coveragerc.toml doesn't exist at all; its settings live in the
+            consumer's own pyproject.toml `[tool.coverage.*]` tables. See
+            resources/templates/pyproject-fragments/python.toml.
         """
         # NOTE: The mise `[tasks]` fragment for Python tasks (format-python,
         # check-python, check-format, check-ty, check-complexity,
@@ -83,8 +89,4 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
         # the consumer's mise.toml (anchor-based TOML merging isn't built
         # yet) — it's hand-copied from
         # resources/templates/mise-fragments/python-tasks.toml.
-        return {
-            'ruff.toml': 'ruff.toml',
-            'coveragerc.toml': 'coveragerc.toml',
-            'pydoclint.toml': 'pydoclint.toml',
-        }
+        return {}

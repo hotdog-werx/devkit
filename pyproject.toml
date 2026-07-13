@@ -20,3 +20,38 @@ dev = [
   "pytest-cov >= 6.2.1",
   "ty >= 0.0.16",
 ]
+
+# devkit dogfoods devkit-python locally (provider_root:, not an installed
+# package), so there's no `.repolish/devkit-python` symlink to reference —
+# extend directly from the package's own config instead.
+[tool.ruff]
+extend = "./packages/devkit-python/devkit/python/resources/configs/ruff.toml"
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/*.py" = [
+  "ANN001", # Allow untyped fixture arguments
+  "ANN201", # Allow tests to not have a return type
+  "ARG001", # Ignore unused arguments in tests - sometimes required for fixtures
+  "D101", # Allow test code to have public classes without docstrings
+  "D102", # Allow test code to have public methods without docstrings
+  "D103", # Allow test code to have public functions without docstrings
+  "INP001", # Test dirs don't need __init__.py
+  "PT004", # Allow none-returning fixtures to not lead with underscore due to ty conflict
+  "S101", # Please sir may I use assert in my tests?
+  "S701", # Jinja Environment() without autoescape is fine for non-HTML template tests
+]
+"**/resources/templates/repolish.py" = [
+  "INP001", # This file is loaded by path (provider_root: self-dogfood), not as a package member
+]
+
+[tool.coverage.html]
+directory = ".coverage-files/htmlcov"
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "if __name__ == .__main__.:",
+  "if typing.TYPE_CHECKING:",
+  "\\.\\.\\.",
+]
+show_missing = true

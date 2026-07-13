@@ -89,19 +89,19 @@ usage = '''
 arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
 '''
 run = """
-ruff format --config ruff.toml --line-length=80 ${usage_files}
-ruff check --config ruff.toml --extend-select COM812 --fix --fix-only ${usage_files}
-ruff format --config ruff.toml ${usage_files}
+ruff format --line-length=80 ${usage_files}
+ruff check --extend-select COM812 --fix --fix-only ${usage_files}
+ruff format ${usage_files}
 """
 
 [tasks."python:check:ruff"]
 run = """
-ruff check --config ruff.toml .
-ruff format --config ruff.toml --check .
+ruff check .
+ruff format --check .
 """
 
 [tasks."python:check:format"]
-run = "ruff format --check --config ruff.toml ."
+run = "ruff format --check ."
 
 [tasks."python:check:ty"]
 run = "ty check ."
@@ -110,7 +110,10 @@ run = "ty check ."
 run = "complexipy -mx 10 ."
 
 [tasks."python:check:pydoclint"]
-run = "pydoclint --style=google --config=pydoclint.toml ."
+# devkit dogfoods devkit-python locally (provider_root:, not an installed
+# package), so there's no `.repolish/devkit-python` symlink to reference —
+# point directly at the package's own config instead.
+run = "pydoclint --style=google --config=./packages/devkit-python/devkit/python/resources/configs/pydoclint.toml ."
 
 [tasks."python:check:coverage"]
 # default="" is not usable here: mise's usage engine renders an empty-string
@@ -122,9 +125,9 @@ arg "[extra]" var=#true default="__NONE__" help="Extra pytest arguments, e.g. --
 '''
 run = '''
 if [ "${usage_extra}" = "__NONE__" ]; then
-  pytest -v --tb=short --cov-config=coveragerc.toml --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov
+  pytest -v --tb=short --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov
 else
-  pytest -v --tb=short --cov-config=coveragerc.toml --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov ${usage_extra}
+  pytest -v --tb=short --cov=devkit --cov-report=term-missing --cov-report=html:.coverage-files/htmlcov ${usage_extra}
 fi
 '''
 
