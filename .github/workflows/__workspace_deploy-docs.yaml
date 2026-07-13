@@ -43,13 +43,13 @@ jobs:
       - name: mise
         uses: jdx/mise-action@v3
       - name: dependencies
-        run: mise run uv-sync
-      - name: check-python
-        run: mise run check-python
+        run: mise run python:uv-sync
       - name: build-docs
-        run: mise run build-docs
+        run: mise run workspace:docs:build
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        with:
+          enablement: true
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
