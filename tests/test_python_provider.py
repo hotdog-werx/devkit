@@ -59,7 +59,7 @@ def test_render_all_excludes_static_configs():
     assert 'coveragerc.toml' not in rendered
     assert 'pydoclint.toml' not in rendered
     assert 'mise-tasks/python/uv-sync' not in rendered
-    assert 'mise-tasks/python/check-coverage' in rendered
+    assert 'mise-tasks/python/check/coverage' in rendered
 
 
 def test_ruff_toml_is_valid_toml():
