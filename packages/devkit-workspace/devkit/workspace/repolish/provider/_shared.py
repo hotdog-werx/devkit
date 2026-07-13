@@ -48,7 +48,11 @@ class _SharedWorkspaceBehavior(
         self,
         context: WorkspaceProviderContext,
     ) -> dict[str, str]:
+        # ci-checks.yaml's custom-job region is a repolish-keep-block
+        # directive instead of a plain anchor (see the .jinja template) —
+        # it preserves whatever job YAML the consumer already wrote there
+        # across re-applies, rather than always resetting to a static
+        # provider-computed placeholder.
         return {
-            'additional-ci-jobs': '## post-check jobs — add your custom jobs here',
             'additional-deploy-jobs': '## post-deploy jobs — add your custom jobs here',
         }

@@ -14,30 +14,47 @@ from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
 from jinja2 import Environment, StrictUndefined
 from repolish.preprocessors.anchors import replace_tags_in_content
+from repolish.preprocessors.keep import KeepBlockSpec, apply_keep_replacements
 from repolish.testing import ProviderTestBed
 
 
-def test_workspace_ci_checks_anchor_marker_is_replaceable():
-    """The additional-ci-jobs anchor in ci-checks.yaml accepts a real substitution."""
+def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
+    """The custom-ci-checks keep-block preserves whatever the consumer already wrote.
+
+    Unlike a plain anchor (always reset to a provider-computed value), a
+    keep-block is what lets consumers add jobs that must live in the same
+    file as repo-checks/python-checks (GitHub Actions `needs:` only works
+    within one file) without repolish clobbering them on the next apply.
+    """
     bed = ProviderTestBed(
         WorkspaceProvider,
         WorkspaceProviderContext(has_python=True, enable_docs=False),
     )
     content = bed.render('.github/workflows/ci-checks.yaml.jinja')
 
-    # The rendered file must still contain the literal marker text (anchor
-    # substitution is a separate preprocessing pass the CLI runs before
-    # Jinja in the real pipeline; ProviderTestBed only does the Jinja pass).
-    assert '## repolish-start[additional-ci-jobs]' in content
-    assert '## repolish-end[additional-ci-jobs]' in content
+    # The rendered file must still contain the literal directive + marker
+    # text (keep-block substitution is a separate preprocessing pass the
+    # CLI runs before Jinja in the real pipeline; ProviderTestBed only does
+    # the Jinja pass).
+    assert 'repolish-keep-block[custom-ci-checks]' in content
+    assert '## start-custom-ci-checks' in content
+    assert '## end-custom-ci-checks' in content
 
-    replaced = replace_tags_in_content(
+    local_content = '## start-custom-ci-checks\ntests:\n  runs-on: ubuntu-latest\n## end-custom-ci-checks\n'
+    result = apply_keep_replacements(
         content,
-        {'additional-ci-jobs': 'custom-job:\n  runs-on: ubuntu-latest'},
+        {
+            'custom-ci-checks': KeepBlockSpec(
+                start='## start-custom-ci-checks',
+                end='## end-custom-ci-checks',
+            ),
+        },
+        {},
+        {},
+        local_content,
     )
-    assert 'custom-job:' in replaced
-    assert '## repolish-start[additional-ci-jobs]' not in replaced
-    assert '## repolish-end[additional-ci-jobs]' not in replaced
+    assert 'tests:\n  runs-on: ubuntu-latest' in result
+    assert 'repolish-keep-block' not in result
 
 
 def test_workspace_deploy_docs_anchor_marker_is_replaceable():
@@ -108,14 +125,14 @@ def test_releez_validate_release_anchor_marker_is_replaceable():
     assert 'notify:' in replaced
 
 
-def test_anchor_content_with_github_actions_expressions_survives_raw_wrapping():
-    """A ${{ }} expression injected via an anchor must not be swallowed by Jinja.
+def test_keep_block_content_with_github_actions_expressions_survives_raw_wrapping():
+    """A ${{ }} expression injected via a keep-block must not be swallowed by Jinja.
 
-    This mirrors releez's real repolish.yaml, where the additional-ci-jobs
-    anchor value itself contains {% raw %}-wrapped ${{ matrix.os }} etc.
-    Anchor substitution runs before Jinja, so the anchor's own value is
-    re-processed by Jinja along with the rest of the file — if it isn't
-    wrapped, rendering fails with an "undefined" error.
+    This mirrors releez's real ci-checks.yaml, where the custom-ci-checks
+    keep-block's local content contains {% raw %}-wrapped ${{ matrix.os }}
+    etc. Keep-block substitution runs before Jinja, so the injected local
+    content is re-processed by Jinja along with the rest of the file — if
+    it isn't wrapped, rendering fails with an "undefined" error.
     """
     bed = ProviderTestBed(
         WorkspaceProvider,
@@ -123,10 +140,23 @@ def test_anchor_content_with_github_actions_expressions_survives_raw_wrapping():
     )
     content = bed.render('.github/workflows/ci-checks.yaml.jinja')
 
-    anchor_value = '  tests:\n    runs-on: {% raw %}${{ matrix.os }}{% endraw %}\n'
-    substituted = replace_tags_in_content(
+    local_content = (
+        '## start-custom-ci-checks\n'
+        '  tests:\n'
+        '    runs-on: {% raw %}${{ matrix.os }}{% endraw %}\n'
+        '## end-custom-ci-checks\n'
+    )
+    substituted = apply_keep_replacements(
         content,
-        {'additional-ci-jobs': anchor_value.rstrip('\n')},
+        {
+            'custom-ci-checks': KeepBlockSpec(
+                start='## start-custom-ci-checks',
+                end='## end-custom-ci-checks',
+            ),
+        },
+        {},
+        {},
+        local_content,
     )
 
     # Re-render the substituted content through Jinja exactly as the real

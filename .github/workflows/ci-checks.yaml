@@ -16,4 +16,10 @@ jobs:
   python-checks:
     uses: hotdog-werx/devkit/.github/workflows/__python_python-checks.yaml@topic/repolish
 
-## post-check jobs — add your custom jobs here
+## start-custom-ci-checks
+## Add custom jobs here (e.g. a tests/test-action pair). Content between
+## these two marker lines is preserved verbatim across repolish re-applies
+## — GitHub Actions `needs:` only works between jobs in the same file, so
+## jobs that must depend on repo-checks/python-checks belong here rather
+## than in a separate workflow file.
+## end-custom-ci-checks
