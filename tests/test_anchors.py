@@ -151,10 +151,7 @@ def test_keep_block_content_with_github_actions_expressions_survives_raw_wrappin
     content = bed.render('.github/workflows/ci-checks.yaml.jinja')
 
     local_content = (
-        f'{_START_MARKER}\n'
-        '  tests:\n'
-        '    runs-on: {% raw %}${{ matrix.os }}{% endraw %}\n'
-        f'{_END_MARKER}\n'
+        f'{_START_MARKER}\n  tests:\n    runs-on: {{% raw %}}${{{{ matrix.os }}}}{{% endraw %}}\n{_END_MARKER}\n'
     )
     substituted = apply_keep_replacements(
         content,
