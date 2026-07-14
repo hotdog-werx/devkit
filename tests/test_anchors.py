@@ -17,6 +17,9 @@ from repolish.preprocessors.anchors import replace_tags_in_content
 from repolish.preprocessors.keep import KeepBlockSpec, apply_keep_replacements
 from repolish.testing import ProviderTestBed
 
+_START_MARKER = '  ## start-custom-ci-checks'
+_END_MARKER = '  ## end-custom-ci-checks'
+
 
 def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
     """The custom-ci-checks keep-block preserves whatever the consumer already wrote.
@@ -25,6 +28,13 @@ def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
     keep-block is what lets consumers add jobs that must live in the same
     file as repo-checks/python-checks (GitHub Actions `needs:` only works
     within one file) without repolish clobbering them on the next apply.
+
+    Both markers are declared at 2-space indent, matching what dprint's
+    yaml formatter settles on for a comment sitting directly before/after
+    an indented job key — repolish's marker lookup is an exact string
+    match with no whitespace normalization, so if only one marker got
+    reformatted (e.g. the end marker left at column 0 because nothing
+    indented follows it), the lookup would silently stop matching.
     """
     bed = ProviderTestBed(
         WorkspaceProvider,
@@ -37,23 +47,23 @@ def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
     # CLI runs before Jinja in the real pipeline; ProviderTestBed only does
     # the Jinja pass).
     assert 'repolish-keep-block[custom-ci-checks]' in content
-    assert '## start-custom-ci-checks' in content
-    assert '## end-custom-ci-checks' in content
+    assert _START_MARKER in content
+    assert _END_MARKER in content
 
-    local_content = '## start-custom-ci-checks\ntests:\n  runs-on: ubuntu-latest\n## end-custom-ci-checks\n'
+    local_content = f'{_START_MARKER}\n  tests:\n    runs-on: ubuntu-latest\n{_END_MARKER}\n'
     result = apply_keep_replacements(
         content,
         {
             'custom-ci-checks': KeepBlockSpec(
-                start='## start-custom-ci-checks',
-                end='## end-custom-ci-checks',
+                start=_START_MARKER,
+                end=_END_MARKER,
             ),
         },
         {},
         {},
         local_content,
     )
-    assert 'tests:\n  runs-on: ubuntu-latest' in result
+    assert 'tests:\n    runs-on: ubuntu-latest' in result
     assert 'repolish-keep-block' not in result
 
 
@@ -141,17 +151,17 @@ def test_keep_block_content_with_github_actions_expressions_survives_raw_wrappin
     content = bed.render('.github/workflows/ci-checks.yaml.jinja')
 
     local_content = (
-        '## start-custom-ci-checks\n'
+        f'{_START_MARKER}\n'
         '  tests:\n'
         '    runs-on: {% raw %}${{ matrix.os }}{% endraw %}\n'
-        '## end-custom-ci-checks\n'
+        f'{_END_MARKER}\n'
     )
     substituted = apply_keep_replacements(
         content,
         {
             'custom-ci-checks': KeepBlockSpec(
-                start='## start-custom-ci-checks',
-                end='## end-custom-ci-checks',
+                start=_START_MARKER,
+                end=_END_MARKER,
             ),
         },
         {},
