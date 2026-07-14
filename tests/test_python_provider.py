@@ -2,10 +2,7 @@ import tomllib
 from pathlib import Path
 
 from devkit.python.repolish.models import PythonProviderContext
-from devkit.python.repolish.provider import (
-    PythonProvider,
-    _detect_project_source,
-)
+from devkit.python.repolish.provider import PythonProvider
 from repolish.testing import ProviderTestBed
 
 _RESOURCES = Path(__file__).parents[1] / 'packages/devkit-python/devkit/python/resources'
@@ -13,53 +10,16 @@ _RUFF_TOML = (_RESOURCES / 'configs/ruff.toml').read_text()
 _PYDOCLINT_TOML = (_RESOURCES / 'configs/pydoclint.toml').read_text()
 
 
-def test_detect_project_source_falls_back_to_src_without_pyproject(
-    tmp_path,
-    monkeypatch,
-):
-    """With no pyproject.toml at all, the fallback source dir is 'src'."""
-    monkeypatch.chdir(tmp_path)
-    assert _detect_project_source() == 'src'
+def test_render_all_is_empty():
+    """Nothing is rendered — every file this provider ships is fully static.
 
-
-def test_detect_project_source_reads_module_name_string(tmp_path, monkeypatch):
-    """module-name as a bare string is used directly as the source dir."""
-    monkeypatch.chdir(tmp_path)
-    (tmp_path / 'pyproject.toml').write_text(
-        '[tool.uv.build-backend]\nmodule-name = "releez"\n',
-    )
-    assert _detect_project_source() == 'releez'
-
-
-def test_detect_project_source_reads_module_name_list(tmp_path, monkeypatch):
-    """uv-toolbox's real pyproject.toml uses a list, not a bare string, here."""
-    monkeypatch.chdir(tmp_path)
-    (tmp_path / 'pyproject.toml').write_text(
-        '[tool.uv.build-backend]\nmodule-name = ["uv_toolbox"]\n',
-    )
-    assert _detect_project_source() == 'uv_toolbox'
-
-
-def test_render_all_excludes_static_configs():
-    """Static configs are referenced directly, not rendered as copies.
-
-    ruff.toml/pydoclint.toml/uv-sync are static and referenced directly from
-    the provider's linked resources directory instead of being rendered as
-    physical copies; coveragerc.toml doesn't exist at all anymore (folded
-    into the consumer's own pyproject.toml). check-coverage is unrelated to
-    this and is still expected (it needs this repo's own project_source, so
-    it's rendered per-repo rather than referenced in place).
+    ruff.toml/pydoclint.toml/uv-sync/check-coverage/etc. are all referenced
+    directly from the provider's linked resources directory instead of
+    being rendered as physical copies; coveragerc.toml doesn't exist at all
+    (folded into the consumer's own pyproject.toml).
     """
-    bed = ProviderTestBed(
-        PythonProvider,
-        PythonProviderContext(project_source='src'),
-    )
-    rendered = bed.render_all()
-    assert 'ruff.toml' not in rendered
-    assert 'coveragerc.toml' not in rendered
-    assert 'pydoclint.toml' not in rendered
-    assert 'mise-tasks/python/uv-sync' not in rendered
-    assert 'mise-tasks/python/check/coverage' in rendered
+    bed = ProviderTestBed(PythonProvider, PythonProviderContext())
+    assert bed.render_all() == {}
 
 
 def test_ruff_toml_is_valid_toml():

@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+#USAGE arg "[extra]" var=#true default="__NONE__" help="Extra pytest arguments"
+"""Run pytest with coverage against this project's own detected source directory.
+
+Excludes tests marked `@pytest.mark.slow` by default (e.g. releez's
+act-driven action tests) — a repo with no such marked tests just gets a
+no-op deselect. This keeps every consumer's coverage invocation identical;
+repos with a genuinely separate slow-test job run it directly (e.g. `pytest
+-m slow tests/action/`) rather than overriding this task's arguments.
+
+The --cov target is auto-detected from pyproject.toml, but can be
+overridden per-repo via the PYTEST_COV_TARGET env var (e.g. set in
+mise.toml's [env]) — needed for a uv workspace container like devkit's own
+repo, which has no single [tool.uv.build-backend] module-name to detect.
+"""
+
+import os
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+
+def _detect_project_source() -> str:
+    """Detect the consumer's project source directory.
+
+    Reads the consumer's own ``pyproject.toml`` looking for
+    ``[tool.uv.build-backend] module-name``, which in a flat (non-src)
+    layout is also the on-disk source directory name (e.g. ``uv_toolbox``).
+    ``module-name`` may be a string or a list of strings (uv supports both);
+    the first entry is used when it's a list. Falls back to ``'src'`` if the
+    file is missing, unreadable, malformed, or the key isn't present.
+    """
+    pyproject_path = Path('pyproject.toml')
+    if not pyproject_path.exists():
+        return 'src'
+
+    try:
+        data = tomllib.loads(pyproject_path.read_text())
+        module_name = data['tool']['uv']['build-backend']['module-name']
+    except (OSError, tomllib.TOMLDecodeError, KeyError, TypeError):
+        return 'src'
+
+    if isinstance(module_name, list):
+        return module_name[0] if module_name else 'src'
+    return module_name
+
+
+if __name__ == '__main__':
+    # default="" is not usable here: mise's usage engine renders an
+    # empty-string default as the literal two-character string `''`, not a
+    # true empty value, which pytest then treats as a bogus "file or
+    # directory not found: ''" positional arg. A non-empty sentinel plus an
+    # explicit check works around it.
+    extra = os.environ.get('usage_extra', '__NONE__')
+    extra_args = [] if extra == '__NONE__' else extra.split()
+    cov_target = os.environ.get('PYTEST_COV_TARGET') or _detect_project_source()
+    cmd = [
+        'pytest', '-v', '--tb=short',
+        '-m', 'not slow',
+        f'--cov={cov_target}',
+        '--cov-report=term-missing',
+        '--cov-report=html:.coverage-files/htmlcov',
+        'tests',
+        *extra_args,
+    ]
+    sys.exit(subprocess.run(cmd, check=False).returncode)

@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
-"""Run complexipy's cognitive complexity checker."""
+"""Run complexipy's cognitive complexity checker.
 
+Threshold is configurable per-repo via the COMPLEXIPY_THRESHOLD env var
+(e.g. set in mise.toml's [env]), defaulting to 10 if unset.
+"""
+
+import os
 import subprocess
 import sys
 
 if __name__ == '__main__':
-    sys.exit(subprocess.run(('complexipy', '-mx', '10', '.'), check=False).returncode)
+    threshold = os.environ.get('COMPLEXIPY_THRESHOLD', '10')
+    cmd = ('complexipy', '-mx', threshold, '.')
+    sys.exit(subprocess.run(cmd, check=False).returncode)

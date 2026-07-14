@@ -1,40 +1,9 @@
-import tomllib
-from pathlib import Path
-
 from devkit.python.repolish.models import (
     PythonProviderContext,
     PythonProviderInputs,
 )
 from repolish import Provider, TemplateMapping
 from typing_extensions import override
-
-
-def _detect_project_source() -> str:
-    """Detect the consumer's project source directory.
-
-    Reads the consumer's own ``pyproject.toml`` looking for
-    ``[tool.uv.build-backend] module-name``, which in a flat (non-src)
-    layout is also the on-disk source directory name (e.g. ``uv_toolbox``).
-    ``module-name`` may be a string or a list of strings (uv supports both);
-    the first entry is used when it's a list. Falls back to ``'src'`` if the
-    file is missing, unreadable, malformed, or the key isn't present.
-
-    Returns:
-        str: The detected project source directory, or ``'src'`` as a fallback.
-    """
-    pyproject_path = Path('pyproject.toml')
-    if not pyproject_path.exists():
-        return 'src'
-
-    try:
-        data = tomllib.loads(pyproject_path.read_text())
-        module_name = data['tool']['uv']['build-backend']['module-name']
-    except (OSError, tomllib.TOMLDecodeError, KeyError, TypeError):
-        return 'src'
-
-    if isinstance(module_name, list):
-        return module_name[0] if module_name else 'src'
-    return module_name
 
 
 class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
@@ -56,11 +25,10 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
         """Build the context for this provider.
 
         Returns:
-            PythonProviderContext: With `project_source` detected from the
-            consumer's `pyproject.toml`, and all other fields left at their
-            Pydantic defaults.
+            PythonProviderContext: All fields at their Pydantic defaults —
+            this provider has no per-repo template variables to resolve.
         """
-        return PythonProviderContext(project_source=_detect_project_source())
+        return PythonProviderContext()
 
     @override
     def create_file_mappings(
@@ -74,19 +42,16 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
                 consistency.
 
         Returns:
-            dict[str, str | TemplateMapping | None]: Empty — ruff.toml and
-            pydoclint.toml are static (no per-repo templating) and are
-            referenced directly from `.repolish/devkit-python/configs/` (the
-            whole-resources-directory symlink `repolish link` already
-            creates) instead of being rendered as physical copies.
-            coveragerc.toml doesn't exist at all; its settings live in the
-            consumer's own pyproject.toml `[tool.coverage.*]` tables. See
+            dict[str, str | TemplateMapping | None]: Empty — every file this
+            provider ships (ruff.toml, pydoclint.toml, and the mise tasks
+            under resources/mise-tasks/) is fully static (no per-repo
+            templating), so nothing needs rendering as a physical copy.
+            They're referenced directly from `.repolish/devkit-python/`
+            (the whole-resources-directory symlink `repolish link` already
+            creates) via mise's `task_config.includes` and `[tool.ruff]
+            extend`/pydoclint's `--config` flag. coveragerc.toml doesn't
+            exist at all; its settings live in the consumer's own
+            pyproject.toml `[tool.coverage.*]` tables. See
             resources/templates/pyproject-fragments/python.toml.
         """
-        # NOTE: The mise `[tasks]` fragment for Python tasks (format-python,
-        # check-python, check-format, check-ty, check-complexity,
-        # check-pydoclint, check-coverage, uv-sync) isn't auto-merged into
-        # the consumer's mise.toml (anchor-based TOML merging isn't built
-        # yet) — it's hand-copied from
-        # resources/templates/mise-fragments/python-tasks.toml.
         return {}
