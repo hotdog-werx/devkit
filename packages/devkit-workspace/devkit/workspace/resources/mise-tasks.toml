@@ -17,7 +17,7 @@ run = "uv-toolbox exec --env repolish -- repolish apply --check"
 run = "uv-toolbox exec --env repolish -- repolish link"
 
 ["workspace:docs:dev"]
-run = "zensical serve --dev-addr=127.0.0.1:8000"
+run = "zensical serve --dev-addr=127.0.0.1:8000 --open"
 
 ["workspace:docs:build"]
 run = "zensical build --clean"
