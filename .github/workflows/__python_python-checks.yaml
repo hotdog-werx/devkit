@@ -38,9 +38,6 @@ jobs:
       - name: check-python
         if: always() && !cancelled()
         run: mise run python:check:ruff
-      - name: check-format
-        if: always() && !cancelled()
-        run: mise run python:check:format
       - name: check-ty
         if: always() && !cancelled()
         run: mise run python:check:ty

@@ -1,8 +1,0 @@
-#!/usr/bin/env python3
-"""Check formatting only, without linting — useful for editor/lefthook granularity."""
-
-import subprocess
-import sys
-
-if __name__ == '__main__':
-    sys.exit(subprocess.run(('ruff', 'format', '--check', '.'), check=False).returncode)
