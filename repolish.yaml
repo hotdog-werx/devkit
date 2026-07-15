@@ -12,6 +12,9 @@ providers:
       # worked on, or devkit's own rendered workflows reference reusable
       # workflows that don't exist yet at the ref they point to.
       devkit_ref: topic/repolish
+      # Preserves the OS matrix the old codeguide/pkglink-based config
+      # (ci_operating_systems) already ran before this migration.
+      python_operating_systems: [ubuntu-latest, windows-latest]
   python:
     provider_root: ./packages/devkit-python/devkit/python/resources/templates
   releez:

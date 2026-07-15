@@ -7,9 +7,12 @@ environments:
       releez==1.0.1
   - name: repolish
     requirements: |
-      repolish
+      repolish>=1.4.0,<2
       -e ./packages/devkit-workspace
       -e ./packages/devkit-python
       -e ./packages/devkit-releez
     executables:
       - repolish
+      - devkit-workspace-link
+      - devkit-python-link
+      - devkit-releez-link
