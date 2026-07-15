@@ -8,9 +8,9 @@ carry their logic). Consumers reference them with
 
 ## `__workspace_repo-checks.yaml`
 
-Runs `check-dprint`, `check-actionlint`, `check-repolish`, and (if `enable-docs`
-input is true) `build-docs`. Every check step is `if: always() && !cancelled()`
-so one failing check doesn't hide failures in the others.
+Runs dprint, actionlint, repolish drift, conditional `uv-toolbox.lock`
+validation, and (if `enable-docs` is true) the docs build. Every check step is
+`if: always() && !cancelled()` so one failure does not hide the others.
 
 ```yaml
 inputs:
@@ -52,7 +52,7 @@ A consumer opts into a full OS matrix + Codecov via its own `repolish.yaml`:
 providers:
   workspace:
     context_overrides:
-      python_operating_systems: '["ubuntu-latest", "windows-latest"]'
+      python_operating_systems: [ubuntu-latest, windows-latest]
       python_codecov: true
 ```
 

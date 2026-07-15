@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   validate-release:
-    uses: hotdog-werx/devkit/.github/workflows/__releez_validate-release.yaml@{{ releez_ref }}
+    uses: hotdog-werx/devkit/.github/workflows/__releez_validate-release.yaml@{{ devkit_ref }}
     with:
       use-self-action: {{ use_self_action | lower }}
 

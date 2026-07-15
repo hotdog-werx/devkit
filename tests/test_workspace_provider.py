@@ -1,12 +1,8 @@
-import subprocess
-
 import pytest
 from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
-from devkit.workspace.repolish.provider.root import WorkspaceRootHandler
-from devkit.workspace.repolish.provider.standalone import (
-    WorkspaceStandaloneHandler,
-)
+from devkit.workspace.repolish.provider._shared import _SharedWorkspaceBehavior
+from repolish import ProviderEntry
 from repolish.testing import ProviderTestBed
 
 CI_CHECKS = '.github/workflows/ci-checks.yaml'
@@ -28,9 +24,7 @@ def bed_no_docs_no_python() -> ProviderTestBed:
     return ProviderTestBed(
         WorkspaceProvider,
         WorkspaceProviderContext(
-            owner='hotdog-werx',
-            repo='example',
-            year='2026',
+            has_python=False,
         ),
     )
 
@@ -41,37 +35,37 @@ def bed_docs_and_python() -> ProviderTestBed:
     return ProviderTestBed(
         WorkspaceProvider,
         WorkspaceProviderContext(
-            owner='hotdog-werx',
-            repo='example',
-            year='2026',
             enable_docs=True,
             has_python=True,
-            workspace_ref='topic/repolish',
-            python_ref='python-v2',
+            devkit_ref='topic/repolish',
         ),
     )
 
 
-def test_create_context_detects_owner_repo_from_git_remote(mocker):
-    """owner/repo are parsed from `git remote get-url origin`."""
-    mocker.patch(
-        'devkit.workspace.repolish.provider.subprocess.check_output',
-        return_value='git@github.com:hotdog-werx/devkit.git\n',
+def test_finalize_context_detects_python_provider() -> None:
+    """Python checks are enabled by provider composition rather than file heuristics."""
+    context = WorkspaceProviderContext()
+    bed = ProviderTestBed(WorkspaceProvider, context)
+
+    resolved = bed.finalize(
+        [],
+        all_providers=[ProviderEntry(provider_id='python', alias='python')],
     )
-    ctx = WorkspaceProvider().create_context()
-    assert ctx.owner == 'hotdog-werx'
-    assert ctx.repo == 'devkit'
+
+    assert resolved.has_python is True
 
 
-def test_create_context_falls_back_when_no_git_remote(mocker):
-    """With no git remote (or the command failing), owner/repo fall back to empty."""
-    mocker.patch(
-        'devkit.workspace.repolish.provider.subprocess.check_output',
-        side_effect=subprocess.CalledProcessError(1, 'git'),
+def test_finalize_context_preserves_explicit_python_override() -> None:
+    """A consumer can explicitly disable Python checks despite loading the provider."""
+    context = WorkspaceProviderContext(has_python=False)
+    bed = ProviderTestBed(WorkspaceProvider, context)
+
+    resolved = bed.finalize(
+        [],
+        all_providers=[ProviderEntry(provider_id='python', alias='python')],
     )
-    ctx = WorkspaceProvider().create_context()
-    assert ctx.owner == ''
-    assert ctx.repo == ''
+
+    assert resolved.has_python is False
 
 
 def test_file_mappings_omit_deploy_docs_when_disabled(bed_no_docs_no_python):
@@ -94,7 +88,7 @@ def test_render_all_succeeds_without_docs_or_python(bed_no_docs_no_python):
 
 @pytest.mark.parametrize(
     'handler_cls',
-    [WorkspaceRootHandler, WorkspaceStandaloneHandler],
+    [_SharedWorkspaceBehavior],
 )
 def test_editorconfig_and_dprint_json_are_symlinked_not_rendered(handler_cls):
     """.editorconfig/dprint.json are symlinked, not rendered.
@@ -147,29 +141,24 @@ def test_ci_checks_passes_operating_systems_and_codecov_to_python_checks():
         WorkspaceProvider,
         WorkspaceProviderContext(
             has_python=True,
-            python_operating_systems='["ubuntu-latest", "windows-latest"]',
+            python_operating_systems=['ubuntu-latest', 'windows-latest'],
             python_codecov=True,
         ),
     )
     content = bed.render(CI_CHECKS_TEMPLATE)
     assert 'operating-systems: \'["ubuntu-latest", "windows-latest"]\'' in content
     assert 'codecov: true' in content
-    assert 'secrets: inherit' in content
+    assert 'CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}' in content
+    assert 'secrets: inherit' not in content
 
 
-def test_ci_checks_references_independent_refs_per_namespace(
+def test_ci_checks_references_one_devkit_ref(
     bed_docs_and_python,
 ):
-    """workspace_ref and python_ref are independently pinnable.
-
-    ci-checks.yaml calls into both the __workspace_ and __python_ reusable-
-    workflow namespaces, and each may need to move to a different devkit
-    ref/tag on its own schedule (e.g. once each provider package gets its
-    own release cycle).
-    """
+    """All reusable workflows use the same devkit release reference."""
     content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
     assert '__workspace_repo-checks.yaml@topic/repolish' in content
-    assert '__python_python-checks.yaml@python-v2' in content
+    assert '__python_python-checks.yaml@topic/repolish' in content
 
 
 def test_enable_docs_passed_through_to_repo_checks_input(bed_docs_and_python):
@@ -184,8 +173,8 @@ def test_enable_docs_false_passed_through(bed_no_docs_no_python):
     assert 'enable-docs: false' in content
 
 
-def test_deploy_docs_references_workspace_ref(bed_docs_and_python):
-    """deploy-docs.yaml pins the reusable workflow to workspace_ref."""
+def test_deploy_docs_references_devkit_ref(bed_docs_and_python):
+    """deploy-docs.yaml pins the reusable workflow to devkit_ref."""
     content = bed_docs_and_python.render(
         '.github/workflows/deploy-docs.yaml.jinja',
     )

@@ -36,6 +36,9 @@ jobs:
       - name: check-repolish
         if: always() && !cancelled()
         run: mise run workspace:repolish:check
+      - name: check-uv-toolbox-lock
+        if: always() && !cancelled()
+        run: mise run workspace:uv-toolbox-lock:check
       - name: build-docs
         if: inputs.enable-docs && always() && !cancelled()
         run: mise run workspace:docs:build

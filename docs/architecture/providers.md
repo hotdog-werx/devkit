@@ -19,12 +19,13 @@ providers:
   workspace:
     cli: devkit-workspace-link
     context_overrides:
-      workspace_ref: v1
-      python_ref: v1
+      devkit_ref: <immutable-tag-or-sha>
   python:
     cli: devkit-python-link
   releez:
     cli: devkit-releez-link
+    context_overrides:
+      devkit_ref: <immutable-tag-or-sha>
 
 providers_order: [workspace, python, releez]
 ```
@@ -49,13 +50,14 @@ Repo-agnostic concerns any repo benefits from, regardless of language:
   rendered only when `enable_docs` is true
 - mise tasks: `workspace:dprint:format`, `workspace:dprint:check`,
   `workspace:actionlint:check`, `workspace:repolish:check`,
-  `workspace:repolish:link`, `workspace:docs:dev`, `workspace:docs:build`,
-  `workspace:docs:clean`, plus the `workspace:setup-hook`/
-  `workspace:pnpm-install` file-tasks
+  `workspace:repolish:link`, `workspace:uv-toolbox-lock:check`,
+  `workspace:docs:dev`, `workspace:docs:build`, `workspace:docs:clean`, plus the
+  `workspace:setup-hook`/`workspace:pnpm-install` file-tasks
 
-Context detection: `owner`/`repo` from `git remote get-url origin`, `has_python`
-from `pyproject.toml`'s `[build-system]` presence, `has_docs`/`enable_docs` from
-`zensical.toml` presence.
+Context detection: `has_python` comes from the loaded provider set and
+`enable_docs` from `zensical.toml` presence. Repository identity and year come
+from repolish's built-in global context rather than provider-specific Git
+subprocesses.
 
 ## `devkit-python`
 
@@ -68,9 +70,8 @@ Python dev tooling — ruff, ty, complexipy, pydoclint, pytest/coverage:
   `pyproject.toml` (see the `pyproject-fragments/python.toml` reference doc
   shipped in the package)
 - mise tasks: `python:format`, `python:check:ruff`, `python:check:ty`,
-  `python:check:complexity`, `python:check:pydoclint`, `python:uv-sync` (all
-  referenced in place), plus `python:check:coverage` (rendered per-repo — see
-  below)
+  `python:check:complexity`, `python:check:pydoclint`, `python:check:coverage`,
+  and `python:uv-sync`, all referenced in place
 
 `create_context()` returns an empty context — this provider has no per-repo
 template variables left to resolve, now that `check-coverage`/
@@ -90,7 +91,6 @@ Release/publish/changelog automation:
   release, and `uv build`/`uv publish` need no wrapper (see
   [Reusable Workflows](../ci/reusable-workflows.md#__releez_publishyaml))
 
-`use_self_action` is auto-detected from `action.yaml`/`action.yml` presence in
-the consumer repo — a repo that hosts its own `action.yaml` _is_ releez itself,
-and should dogfood its local action (`uses: ./`) instead of the published
-`hotdog-werx/releez@v1`. No manual override needed.
+`use_self_action` defaults to false. Releez itself explicitly sets it to true to
+dogfood its local action; other GitHub Action repositories are therefore not
+mistaken for releez merely because they contain `action.yaml`.

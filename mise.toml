@@ -21,7 +21,7 @@ git-cliff = "2.13.1"
 actionlint = "1.7.11"
 shellcheck = "0.11.0"
 
-"pipx:uv-toolbox" = "0.1.0"
+"pipx:git+https://github.com/hotdog-werx/uv-toolbox.git@chore/use-devkit" = "chore/use-devkit"
 "pipx:ruff" = "0.14.14"
 "pipx:ty" = "0.0.59"
 "pipx:complexipy" = "4.0.2"
@@ -86,4 +86,5 @@ depends = [
   "workspace:dprint:check",
   "workspace:actionlint:check",
   "workspace:repolish:check",
+  "workspace:uv-toolbox-lock:check",
 ]

@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+"""Verify uv-toolbox.lock when the repository uses one."""
+
+import subprocess
+import sys
+from pathlib import Path
+
+
+if __name__ == '__main__':
+    if not Path('uv-toolbox.lock').exists():
+        sys.exit(0)
+    cmd = ['uv-toolbox', 'lock', '--check']
+    sys.exit(subprocess.run(cmd, check=False).returncode)

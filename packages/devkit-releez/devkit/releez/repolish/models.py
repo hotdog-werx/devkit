@@ -4,9 +4,7 @@ from repolish import BaseContext, BaseInputs
 class ReleezProviderContext(BaseContext):
     """Context for the ReleezProvider."""
 
-    owner: str = 'hotdog-werx'
-    repo: str = ''
-    releez_ref: str = 'master'
+    devkit_ref: str = 'master'
     build_command: str = 'rm -rf dist && uv build'
     publish_command: str = 'uv publish dist/*'
     use_self_action: bool = False

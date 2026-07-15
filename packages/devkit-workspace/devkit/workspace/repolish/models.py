@@ -1,17 +1,16 @@
+from pydantic import Field
 from repolish import BaseContext, BaseInputs
 
 
 class WorkspaceProviderContext(BaseContext):
     """Context for the WorkspaceProvider."""
 
-    owner: str = ''
-    repo: str = ''
-    year: str = ''
-    workspace_ref: str = 'master'
-    python_ref: str = 'master'
+    devkit_ref: str = 'master'
     enable_docs: bool = False
-    has_python: bool = False
-    python_operating_systems: str = '["ubuntu-latest"]'
+    has_python: bool | None = None
+    python_operating_systems: list[str] = Field(
+        default_factory=lambda: ['ubuntu-latest'],
+    )
     python_codecov: bool = False
 
 

@@ -2,7 +2,7 @@ from devkit.workspace.repolish.models import (
     WorkspaceProviderContext,
     WorkspaceProviderInputs,
 )
-from repolish import ModeHandler, Symlink, TemplateMapping
+from repolish import FinalizeContextOptions, ModeHandler, Symlink, TemplateMapping
 from typing_extensions import override
 
 
@@ -11,8 +11,8 @@ class _SharedWorkspaceBehavior(
 ):
     """Behavior shared by root- and standalone-mode workspaces.
 
-    Member mode gets none of this (see member.py) — consumer repos in this
-    org are never repolish workspace *members* themselves.
+    Member mode uses the provider's no-op defaults; repository-wide files and
+    tasks belong only at a workspace root or in a standalone repository.
 
     Note: these symlinks use an absolute path to their source, so they must
     never be committed to git (see .gitignore) — every environment (local
@@ -20,6 +20,26 @@ class _SharedWorkspaceBehavior(
     workspace:repolish:link mise task), which recreates them fresh and
     correctly for that machine's checkout path.
     """
+
+    @override
+    def finalize_context(
+        self,
+        opt: FinalizeContextOptions[
+            WorkspaceProviderContext,
+            WorkspaceProviderInputs,
+        ],
+    ) -> WorkspaceProviderContext:
+        """Derive Python support from provider composition unless overridden."""
+        if opt.own_context.has_python is not None:
+            return opt.own_context
+
+        has_python = any(
+            entry.alias == 'python'
+            or (entry.inst_type is not None and entry.inst_type.__module__.startswith('devkit.python.'))
+            or (entry.context_type is not None and entry.context_type.__module__.startswith('devkit.python.'))
+            for entry in opt.all_providers
+        )
+        return opt.own_context.model_copy(update={'has_python': has_python})
 
     @override
     def create_default_symlinks(self) -> list[Symlink]:

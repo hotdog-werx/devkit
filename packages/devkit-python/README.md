@@ -5,14 +5,13 @@ pytest/coverage config, and the Python CI check workflow.
 
 This package ships:
 
-- `devkit.python` — a [repolish](https://pypi.org/project/repolish/) provider
-  (`PythonProvider`) that pushes Python dev-tooling config templates
-  (`ruff.toml`, `coveragerc.toml`, `pydoclint.toml`) and the shared
-  `_ci-checks.yaml` reusable workflow into consumer repos. Type checking uses
-  `ty` (latest version) only — `pyright`/`basedpyright` are not used.
-- [`toolbelt`](https://pypi.org/project/tbelt/) profile configs
-  (`toolbelt/python.yaml`, `toolbelt/python-dev.yaml`) that batch format/check
-  commands per file type.
+- `devkit.python` — a [repolish](https://pypi.org/project/repolish/) provider.
+- Static ruff and pydoclint configuration referenced through the provider's
+  linked resources directory.
+- Cross-platform mise tasks for ruff, ty, complexipy, pydoclint, formatting,
+  dependency sync, and pytest/coverage.
+- A reference `pyproject.toml` fragment for settings that must remain in each
+  consumer's own project configuration.
 
 Note: `devkit.workspace` (package `devkit-workspace`) applies first in any
 consumer repo and owns repo-wide concerns like `dprint`/`.editorconfig`; this
@@ -20,10 +19,9 @@ provider only covers Python-specific tooling.
 
 ## Provider
 
-`devkit.python.repolish.provider.PythonProvider` detects the consumer's
-`project_source` (`src` by default) from `[tool.uv.build-backend] module-name`
-metadata in the consumer's own `pyproject.toml`, then maps template resources to
-destination paths in the consumer repo.
+`PythonProvider` renders no files. Static resources are linked and referenced in
+place; tasks that need repository-specific values detect them when they run and
+provide environment-variable overrides for exceptional layouts.
 
 ## Development
 

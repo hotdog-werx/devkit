@@ -89,7 +89,7 @@ def test_releez_finalize_release_anchor_marker_is_replaceable():
     """The additional-jobs anchor in finalize-release.yaml accepts a real substitution."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(repo='example', use_self_action=False),
+        ReleezProviderContext(use_self_action=False),
     )
     content = bed.render('.github/workflows/finalize-release.yaml.jinja')
 
@@ -105,7 +105,7 @@ def test_releez_finalize_release_anchor_marker_is_replaceable():
 
 def test_releez_lint_pr_title_anchor_marker_is_replaceable():
     """The additional-lint-pr-title-jobs anchor in lint-pr-title.yaml accepts a real substitution."""
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='example'))
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext())
     content = bed.render('.github/workflows/lint-pr-title.yaml.jinja')
 
     assert '## repolish-start[additional-lint-pr-title-jobs]' in content
@@ -120,7 +120,7 @@ def test_releez_lint_pr_title_anchor_marker_is_replaceable():
 
 def test_releez_validate_release_anchor_marker_is_replaceable():
     """The additional-validate-release-jobs anchor in validate-release.yaml accepts a real substitution."""
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='example'))
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext())
     content = bed.render('.github/workflows/validate-release.yaml.jinja')
 
     assert '## repolish-start[additional-validate-release-jobs]' in content
@@ -170,5 +170,7 @@ def test_keep_block_content_with_github_actions_expressions_survives_raw_wrappin
     # apply pipeline does — this is the step that previously blew up with
     # "'matrix' is undefined" when the ${{ }} wasn't raw-wrapped.
     env = Environment(undefined=StrictUndefined, keep_trailing_newline=True)
-    final = env.from_string(substituted).render()
+    final = env.from_string(substituted).render(
+        secrets={'CODECOV_TOKEN': '${{ secrets.CODECOV_TOKEN }}'},
+    )
     assert '${{ matrix.os }}' in final

@@ -7,23 +7,17 @@ providers:
     # under it. Point resources_dir at the parent so symlink sources resolve.
     resources_dir: ./packages/devkit-workspace/devkit/workspace/resources
     context_overrides:
-      # devkit's own root pyproject.toml has no [build-system] (it's a pure
-      # uv workspace container, package = false) so the generic has_python
-      # auto-detection misses it — but the repo is full of Python code
-      # across packages/*, so force it on for devkit's own self-render.
-      has_python: true
       # devkit hasn't cut a tagged release yet, and this content isn't on
       # master either — self-render against the branch actually being
       # worked on, or devkit's own rendered workflows reference reusable
       # workflows that don't exist yet at the ref they point to.
-      workspace_ref: topic/repolish
-      python_ref: topic/repolish
+      devkit_ref: topic/repolish
   python:
     provider_root: ./packages/devkit-python/devkit/python/resources/templates
   releez:
     provider_root: ./packages/devkit-releez/devkit/releez/resources/templates
     context_overrides:
-      releez_ref: topic/repolish
+      devkit_ref: topic/repolish
       # devkit's root pyproject.toml is a bare uv workspace container
       # (package = false, no [build-system]) — there's nothing to build or
       # publish to PyPI at this level. Individual provider packages may get

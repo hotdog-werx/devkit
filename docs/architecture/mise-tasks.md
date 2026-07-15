@@ -138,18 +138,10 @@ rare repo where auto-detection isn't right:
 This removed `project_source`/`complexipy_threshold` from
 `PythonProviderContext` entirely — nothing needs them anymore.
 
-`check-coverage` is the **one exception** that's still rendered per-repo rather
-than referenced in place: it excludes `@pytest.mark.slow`-marked tests by
-default (`pytest -m "not slow" ...`), and while the `--cov=` target is now
-runtime-detected, the file itself is still auto-discovered from
-`templates/repolish/mise-tasks/python/check/coverage` rather than living in the
-static `resources/mise-tasks/` tree — this is purely to keep the
-`{{ project_source }}`-free file next to its sibling static tasks conceptually,
-not a hard requirement. A repo dogfooding devkit-python locally via
-`provider_root:` (like devkit itself) doesn't get this file at all in **root
-mode** — `repolish apply` skips auto-discovered files entirely there — so a
-root-mode consumer needs its own manual `[tasks."python:check:coverage"]`
-fallback (see devkit's own `mise.toml`).
+`check-coverage` is also referenced in place. It excludes
+`@pytest.mark.slow`-marked tests by default (`pytest -m "not slow" ...`) and
+detects its coverage target from the consumer's `pyproject.toml` each time it
+runs, so no per-repository rendering is needed.
 
 ## Tool version pinning
 

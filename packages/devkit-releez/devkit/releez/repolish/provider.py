@@ -1,6 +1,3 @@
-import re
-import subprocess
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from devkit.releez.repolish.models import (
@@ -13,45 +10,9 @@ from typing_extensions import override
 if TYPE_CHECKING:
     from repolish import TemplateMapping
 
-_GITHUB_REMOTE_PATTERN = re.compile(
-    r'(?:https://(?:[^/]+@)?github\.com/|git@github\.com:)([^/]+)/([^.]+)(?:\.git)?$',
-)
-
-
-def _detect_repo() -> str:
-    """Derive the repo name from the `origin` git remote, if possible."""
-    try:
-        remote_url = subprocess.check_output(
-            ['git', 'remote', 'get-url', 'origin'],
-            text=True,
-        ).strip()
-    except (subprocess.CalledProcessError, OSError):
-        return ''
-
-    match = _GITHUB_REMOTE_PATTERN.search(remote_url)
-    if not match:
-        return ''
-    return match.group(2)
-
-
-def _detect_self_action() -> bool:
-    """Detect whether this repo hosts its own hotdog-werx/releez action.yaml.
-
-    A repo that has one *is* releez — it should dogfood its own action
-    (`uses: ./`) instead of the published `hotdog-werx/releez@v1`.
-    """
-    return Path('action.yaml').exists() or Path('action.yml').exists()
-
 
 class ReleezProvider(Provider[ReleezProviderContext, ReleezProviderInputs]):
     """Repolish provider for release, publish, and changelog automation."""
-
-    @override
-    def create_context(self) -> ReleezProviderContext:
-        return ReleezProviderContext(
-            repo=_detect_repo(),
-            use_self_action=_detect_self_action(),
-        )
 
     @override
     def create_file_mappings(

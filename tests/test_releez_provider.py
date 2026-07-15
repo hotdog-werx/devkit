@@ -1,7 +1,7 @@
 import tomllib
 
 from devkit.releez.repolish.models import ReleezProviderContext
-from devkit.releez.repolish.provider import ReleezProvider, _detect_self_action
+from devkit.releez.repolish.provider import ReleezProvider
 from repolish.testing import ProviderTestBed
 
 # NOTE: create_file_mappings() references these without the .jinja suffix
@@ -14,27 +14,11 @@ VALIDATE_RELEASE_TEMPLATE = '.github/workflows/validate-release.yaml.jinja'
 CLIFF_TOML_TEMPLATE = 'cliff.toml.jinja'
 
 
-def test_detect_self_action_true_when_action_yaml_present(
-    tmp_path,
-    monkeypatch,
-):
-    """A repo with its own action.yaml is releez itself — dogfood the local action."""
-    monkeypatch.chdir(tmp_path)
-    (tmp_path / 'action.yaml').write_text('name: releez\n')
-    assert _detect_self_action() is True
-
-
-def test_detect_self_action_false_without_action_yaml(tmp_path, monkeypatch):
-    """A repo with no action.yaml is a consumer — use the published action."""
-    monkeypatch.chdir(tmp_path)
-    assert _detect_self_action() is False
-
-
 def test_finalize_release_uses_published_action_by_default():
     """use_self_action=False renders the published-action input as false."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(repo='uv-toolbox', use_self_action=False),
+        ReleezProviderContext(use_self_action=False),
     )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert 'use-self-action: false' in workflow
@@ -44,7 +28,7 @@ def test_finalize_release_uses_self_action_when_enabled():
     """use_self_action=True renders the self-action input as true."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(repo='releez', use_self_action=True),
+        ReleezProviderContext(use_self_action=True),
     )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert 'use-self-action: true' in workflow
@@ -52,17 +36,17 @@ def test_finalize_release_uses_self_action_when_enabled():
 
 def test_finalize_release_uses_direct_uv_commands_for_build_and_publish():
     """No mise task wrappers: uv build/publish need no indirection, and releez itself handles tag-pulling now."""
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext(repo='example'))
+    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext())
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert 'build-command: rm -rf dist && uv build' in workflow
     assert 'publish-command: uv publish dist/*' in workflow
 
 
-def test_finalize_release_references_releez_ref_reusable_workflow():
-    """The finalize-release workflow pins the reusable workflow to releez_ref."""
+def test_finalize_release_references_devkit_ref_reusable_workflow():
+    """The finalize-release workflow pins the reusable workflow to devkit_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(releez_ref='topic/repolish'),
+        ReleezProviderContext(devkit_ref='topic/repolish'),
     )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert '__releez_publish.yaml@topic/repolish' in workflow
@@ -90,11 +74,11 @@ def test_finalize_release_publish_package_can_be_disabled():
     assert 'publish-package: false' in workflow
 
 
-def test_lint_pr_title_references_releez_ref_reusable_workflow():
-    """The lint-pr-title workflow pins the reusable workflow to releez_ref."""
+def test_lint_pr_title_references_devkit_ref_reusable_workflow():
+    """The lint-pr-title workflow pins the reusable workflow to devkit_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(releez_ref='topic/repolish'),
+        ReleezProviderContext(devkit_ref='topic/repolish'),
     )
     workflow = bed.render(LINT_PR_TITLE_TEMPLATE)
     assert '__releez_lint-pr-title.yaml@topic/repolish' in workflow
@@ -110,11 +94,11 @@ def test_lint_pr_title_uses_self_action_when_enabled():
     assert 'use-self-action: true' in workflow
 
 
-def test_validate_release_references_releez_ref_reusable_workflow():
-    """The validate-release workflow pins the reusable workflow to releez_ref."""
+def test_validate_release_references_devkit_ref_reusable_workflow():
+    """The validate-release workflow pins the reusable workflow to devkit_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(releez_ref='topic/repolish'),
+        ReleezProviderContext(devkit_ref='topic/repolish'),
     )
     workflow = bed.render(VALIDATE_RELEASE_TEMPLATE)
     assert '__releez_validate-release.yaml@topic/repolish' in workflow
@@ -140,13 +124,17 @@ def test_cliff_toml_is_valid_toml_and_preserves_tera_syntax():
     """
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(owner='hotdog-werx', repo='releez'),
+        ReleezProviderContext(
+            repolish={
+                'repo': {'owner': 'hotdog-werx', 'name': 'releez'},
+            },
+        ),
     )
     content = bed.render(CLIFF_TOML_TEMPLATE)
     parsed = tomllib.loads(content)
 
-    assert parsed['remote']['github']['owner'] == 'hotdog-werx'
-    assert parsed['remote']['github']['repo'] == 'releez'
+    assert parsed['remote']['github']['owner'] == 'test-owner'
+    assert parsed['remote']['github']['repo'] == 'test-repo'
     # Tera syntax must remain literal, not be interpreted as Jinja:
     assert '{{ version | trim_start_matches' in parsed['changelog']['body']
     assert '{% if commit.scope %}' in parsed['changelog']['body']

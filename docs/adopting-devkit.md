@@ -27,17 +27,13 @@ environments:
       - devkit-releez-link
 ```
 
-Once devkit publishes real releases, only this file's git ref needs to change (a
-version tag instead of a branch name) — `repolish.yaml` and every mise task stay
-untouched.
+Pin provider packages and reusable workflows to the same immutable release.
 
-After editing `uv-toolbox.yaml`, regenerate the lockfile (a plain `lock`/
-`install` won't pick up a `requirements:` text change on its own — delete and
-regenerate if it seems stuck on stale content):
+After editing `uv-toolbox.yaml`, regenerate and verify the lockfile:
 
 ```bash
-rm -f uv-toolbox.lock
 uv-toolbox lock
+uv-toolbox lock --check
 uv-toolbox install
 ```
 
@@ -48,14 +44,13 @@ providers:
   workspace:
     cli: devkit-workspace-link
     context_overrides:
-      workspace_ref: v1
-      python_ref: v1
+      devkit_ref: <immutable-tag-or-sha>
   python:
     cli: devkit-python-link
   releez:
     cli: devkit-releez-link
     context_overrides:
-      releez_ref: v1
+      devkit_ref: <immutable-tag-or-sha>
 
 providers_order: [workspace, python, releez]
 
@@ -133,6 +128,7 @@ comments for the local-path variant).
 rm -f .editorconfig dprint.json  # simulate a fresh checkout
 mise install
 mise run workspace:repolish:check   # should report zero drift
+mise run workspace:uv-toolbox-lock:check
 mise run repo-checks                # dprint/actionlint/repolish, all clean
 ```
 

@@ -19,6 +19,9 @@ on:
         description: 'Whether to build and publish a package to PyPI. Set false for repos with no single installable root package (e.g. a bare workspace container) — the tag/changelog/GitHub Release steps still run.'
         type: boolean
         default: true
+    secrets:
+      PYPI_PUBLISH_TOKEN:
+        required: false
 
 permissions:
   contents: write

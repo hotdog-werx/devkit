@@ -9,16 +9,17 @@ on:
 
 jobs:
   repo-checks:
-    uses: hotdog-werx/devkit/.github/workflows/__workspace_repo-checks.yaml@{{ workspace_ref }}
+    uses: hotdog-werx/devkit/.github/workflows/__workspace_repo-checks.yaml@{{ devkit_ref }}
     with:
       enable-docs: {{ enable_docs | lower }}
 {% if has_python %}
   python-checks:
-    uses: hotdog-werx/devkit/.github/workflows/__python_python-checks.yaml@{{ python_ref }}
+    uses: hotdog-werx/devkit/.github/workflows/__python_python-checks.yaml@{{ devkit_ref }}
     with:
-      operating-systems: '{{ python_operating_systems }}'
+      operating-systems: '{{ python_operating_systems | tojson }}'
       codecov: {{ python_codecov | lower }}
-    secrets: inherit
+    secrets:
+      CODECOV_TOKEN: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}
 {% endif %}
 ## repolish-keep-block[custom-ci-checks]: start="  ## start-custom-ci-checks" end="  ## end-custom-ci-checks"
   ## start-custom-ci-checks
