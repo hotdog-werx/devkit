@@ -2,7 +2,12 @@ from devkit.workspace.repolish.models import (
     WorkspaceProviderContext,
     WorkspaceProviderInputs,
 )
-from repolish import FinalizeContextOptions, ModeHandler, Symlink, TemplateMapping
+from repolish import (
+    FinalizeContextOptions,
+    ModeHandler,
+    Symlink,
+    TemplateMapping,
+)
 from typing_extensions import override
 
 
