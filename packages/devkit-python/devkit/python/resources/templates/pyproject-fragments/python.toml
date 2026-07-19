@@ -9,7 +9,7 @@
 # symlink — point `extend` at the local package path instead, e.g.
 # "./packages/devkit-python/devkit/python/resources/configs/ruff.toml".
 [tool.ruff]
-extend = ".repolish/devkit-python/configs/ruff.toml"
+extend = ".repolish/hotdogwerx-devkit-python/configs/ruff.toml"
 
 # per-file-ignores lives here, not in the shared ruff.toml: ruff's `extend`
 # resolves relative globs (like "**/tests/*.py") against the *extended*

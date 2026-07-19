@@ -34,17 +34,20 @@ class _SharedWorkspaceBehavior(
             WorkspaceProviderInputs,
         ],
     ) -> WorkspaceProviderContext:
-        """Derive Python support from provider composition unless overridden."""
-        if opt.own_context.has_python is not None:
-            return opt.own_context
+        """Merge Python provider settings and detect whether Python is enabled."""
+        updates: dict[str, object] = {}
+        if opt.received_inputs:
+            updates['python_ref'] = opt.received_inputs[-1].python_ref
 
-        has_python = any(
-            entry.alias == 'python'
-            or (entry.inst_type is not None and entry.inst_type.__module__.startswith('devkit.python.'))
-            or (entry.context_type is not None and entry.context_type.__module__.startswith('devkit.python.'))
-            for entry in opt.all_providers
-        )
-        return opt.own_context.model_copy(update={'has_python': has_python})
+        if opt.own_context.has_python is None:
+            updates['has_python'] = any(
+                entry.alias == 'python'
+                or (entry.inst_type is not None and entry.inst_type.__module__.startswith('devkit.python.'))
+                or (entry.context_type is not None and entry.context_type.__module__.startswith('devkit.python.'))
+                for entry in opt.all_providers
+            )
+
+        return opt.own_context.model_copy(update=updates)
 
     @override
     def create_default_symlinks(self) -> list[Symlink]:
@@ -66,18 +69,4 @@ class _SharedWorkspaceBehavior(
             '.github/workflows/deploy-docs.yaml': (
                 '.github/workflows/deploy-docs.yaml' if context.enable_docs else None
             ),
-        }
-
-    @override
-    def create_anchors(
-        self,
-        context: WorkspaceProviderContext,
-    ) -> dict[str, str]:
-        # ci-checks.yaml's custom-job region is a repolish-keep-block
-        # directive instead of a plain anchor (see the .jinja template) —
-        # it preserves whatever job YAML the consumer already wrote there
-        # across re-applies, rather than always resetting to a static
-        # provider-computed placeholder.
-        return {
-            'additional-deploy-jobs': '## post-deploy jobs — add your custom jobs here',
         }

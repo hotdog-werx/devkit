@@ -13,6 +13,21 @@ package = false
 [tool.uv.workspace]
 members = ["packages/*"]
 
+[[tool.releez.projects]]
+name = "workspace"
+path = "packages/devkit-workspace"
+tag-prefix = "workspace-"
+
+[[tool.releez.projects]]
+name = "python"
+path = "packages/devkit-python"
+tag-prefix = "python-"
+
+[[tool.releez.projects]]
+name = "releez"
+path = "packages/devkit-releez"
+tag-prefix = "releez-"
+
 [dependency-groups]
 dev = [
   "pytest >= 9.0.2",
@@ -22,7 +37,7 @@ dev = [
 ]
 
 # devkit dogfoods devkit-python locally (provider_root:, not an installed
-# package), so there's no `.repolish/devkit-python` symlink to reference —
+# package), so there's no `.repolish/hotdogwerx-devkit-python` symlink to reference —
 # extend directly from the package's own config instead.
 [tool.ruff]
 extend = "./packages/devkit-python/devkit/python/resources/configs/ruff.toml"

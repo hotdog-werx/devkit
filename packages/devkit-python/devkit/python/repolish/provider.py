@@ -1,12 +1,12 @@
 from devkit.python.repolish.models import (
     PythonProviderContext,
-    PythonProviderInputs,
+    PythonWorkflowInputs,
 )
-from repolish import Provider, TemplateMapping
+from repolish import BaseInputs, ProvideInputsOptions, Provider, TemplateMapping
 from typing_extensions import override
 
 
-class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
+class PythonProvider(Provider[PythonProviderContext, BaseInputs]):
     """Repolish provider for Python dev tooling.
 
     Covers ruff, ty, complexipy, pydoclint, and pytest/coverage config.
@@ -25,10 +25,18 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
         """Build the context for this provider.
 
         Returns:
-            PythonProviderContext: All fields at their Pydantic defaults —
-            this provider has no per-repo template variables to resolve.
+            PythonProviderContext: Python-owned provider settings at their
+            defaults, including the reusable-workflow ref.
         """
         return PythonProviderContext()
+
+    @override
+    def provide_inputs(
+        self,
+        opt: ProvideInputsOptions[PythonProviderContext],
+    ) -> list[BaseInputs]:
+        """Supply the Python reusable-workflow ref to composing providers."""
+        return [PythonWorkflowInputs(python_ref=opt.own_context.python_ref)]
 
     @override
     def create_file_mappings(
@@ -46,7 +54,7 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
             provider ships (ruff.toml, pydoclint.toml, and the mise tasks
             under resources/mise-tasks/) is fully static (no per-repo
             templating), so nothing needs rendering as a physical copy.
-            They're referenced directly from `.repolish/devkit-python/`
+            They're referenced directly from `.repolish/hotdogwerx-devkit-python/`
             (the whole-resources-directory symlink `repolish link` already
             creates) via mise's `task_config.includes` and `[tool.ruff]
             extend`/pydoclint's `--config` flag. coveragerc.toml doesn't

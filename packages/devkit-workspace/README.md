@@ -1,4 +1,4 @@
-# devkit-workspace
+# hotdogwerx-devkit-workspace
 
 A [repolish](https://github.com/hotdog-werx/repolish) provider.
 
@@ -8,6 +8,6 @@ Add this provider to your project's `repolish.yaml`:
 
 ```yaml
 providers:
-  devkit-workspace:
+  workspace:
     cli: devkit-workspace-link
 ```

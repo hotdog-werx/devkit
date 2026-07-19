@@ -1,10 +1,16 @@
 [project]
-name = "devkit-workspace"
-description = "Repolish provider"
+name = "hotdogwerx-devkit-workspace"
+description = "Repolish provider for shared workspace tooling, CI, docs, and formatting"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 version = "0.1.0"
+keywords = ["automation", "development", "repolish"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+]
 
 dependencies = [
   "repolish >=1.4.0, <2",
@@ -19,8 +25,13 @@ dev = [
 [project.scripts]
 devkit-workspace-link = "devkit.workspace.repolish.linker:main"
 
+[project.urls]
+Documentation = "https://hotdog-werx.github.io/devkit/"
+Issues = "https://github.com/hotdog-werx/devkit/issues"
+Repository = "https://github.com/hotdog-werx/devkit"
+
 [build-system]
-requires = ["uv_build"]
+requires = ["uv_build>=0.11,<0.12"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]

@@ -17,9 +17,9 @@ directory. A consumer's `mise.toml` looks like this:
 [task_config]
 includes = [
   "mise-tasks", # the default, kept explicitly
-  ".repolish/devkit-workspace/mise-tasks",
-  ".repolish/devkit-workspace/mise-tasks.toml",
-  ".repolish/devkit-python/mise-tasks",
+  ".repolish/hotdogwerx-devkit-workspace/mise-tasks",
+  ".repolish/hotdogwerx-devkit-workspace/mise-tasks.toml",
+  ".repolish/hotdogwerx-devkit-python/mise-tasks",
 ]
 ```
 
@@ -27,13 +27,13 @@ includes = [
 them** — this is why `"mise-tasks"` has to be listed explicitly even though it's
 mise's own default.
 
-`.repolish/devkit-<name>/` is a whole-resources-directory symlink that
-`repolish link` creates automatically for every installed provider, populated on
-every `mise install` via a postinstall hook — no `repolish
-apply` required, just
-`repolish link` (a much lighter operation). Devkit's own repo (which dogfoods
-its providers via `provider_root:` rather than installing them as packages)
-points `includes` at the local package paths directly instead:
+`.repolish/hotdogwerx-devkit-<name>/` is a whole-resources-directory symlink
+that `repolish link` creates automatically for every installed provider,
+populated on every `mise install` via a postinstall hook — no `repolish
+apply`
+required, just `repolish link` (a much lighter operation). Devkit's own repo
+(which dogfoods its providers via `provider_root:` rather than installing them
+as packages) points `includes` at the local package paths directly instead:
 
 ```toml
 [task_config]

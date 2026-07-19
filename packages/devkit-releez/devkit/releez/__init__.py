@@ -2,7 +2,7 @@ from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _v
 
 try:
-    __version__ = _v('devkit-releez')
+    __version__ = _v('hotdogwerx-devkit-releez')
 except PackageNotFoundError:
     __version__ = '0.0.0.dev0'
 

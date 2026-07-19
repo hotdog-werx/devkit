@@ -29,11 +29,3 @@ class ReleezProvider(Provider[ReleezProviderContext, ReleezProviderInputs]):
             '.github/workflows/lint-pr-title.yaml': '.github/workflows/lint-pr-title.yaml',
             '.github/workflows/validate-release.yaml': '.github/workflows/validate-release.yaml',
         }
-
-    @override
-    def create_anchors(self, context: ReleezProviderContext) -> dict[str, str]:
-        return {
-            'additional-jobs': '## post-release jobs — add your custom jobs here',
-            'additional-lint-pr-title-jobs': '## post-lint-pr-title jobs — add your custom jobs here',
-            'additional-validate-release-jobs': '## post-validate-release jobs — add your custom jobs here',
-        }

@@ -98,10 +98,24 @@ This is worked around with two mutually-exclusive steps, each with a static
 Outputs from whichever step actually ran are merged with `||`:
 `${{ steps.releez-published.outputs.x || steps.releez-self.outputs.x }}`.
 
+The publish and validate workflows also accept `project`, defaulting to `''`.
+They forward it to the Releez action; an empty value uses release-branch
+detection.
+
 `__releez_publish.yaml`'s `build-command`/`publish-command` inputs default to
-plain `uv build`/`uv publish` commands (`rm -rf dist && uv build`,
-`uv publish dist/*`) — no mise task wrapper. Releez itself already handles
-tag-pulling before starting a release, and these commands need no indirection.
+plain `uv build`/`uv publish` commands (`uv build --no-sources`,
+`uv publish dist/*`) — no mise task wrapper. `--no-sources` verifies that the
+distribution can build from its published metadata rather than relying on
+workspace-only source overrides.
+
+For a monorepo release, the workflow reads the single `project` and singular
+`pep440-version` emitted by Releez finalize. It passes that project to
+`uv version --package`; single-project repositories retain the normal root
+project behavior. A monorepo can customize `build-command` to build the selected
+package using the exported `PROJECT` environment variable. When Releez project
+IDs differ from Python distribution names, `package-prefix` is prepended for
+`uv version`; the same `PACKAGE_PREFIX` value is exported to custom build
+commands.
 
 ## Reusable-workflow permission ceilings
 

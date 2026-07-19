@@ -1,4 +1,4 @@
-# devkit-releez
+# hotdogwerx-devkit-releez
 
 Repolish provider: release, publish, and changelog automation for hotdog-werx
 repos.

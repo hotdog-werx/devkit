@@ -10,15 +10,15 @@ kept in sync) by [`repolish`](https://github.com/hotdog-werx/repolish).
 
 Three providers, each covering a distinct concern:
 
-| Provider           | Package            | Covers                                                                                             |
-| ------------------ | ------------------ | -------------------------------------------------------------------------------------------------- |
-| `devkit-workspace` | `devkit.workspace` | `.editorconfig`, `dprint.json`, `ci-checks.yaml`, `deploy-docs.yaml`, dprint/actionlint/docs tasks |
-| `devkit-python`    | `devkit.python`    | `ruff.toml`, `pydoclint.toml`, ruff/ty/complexipy/pydoclint/pytest tasks                           |
-| `devkit-releez`    | `devkit.releez`    | `cliff.toml`, `finalize-release.yaml`, `lint-pr-title.yaml`, `validate-release.yaml`               |
+| Provider                      | Package            | Covers                                                                                             |
+| ----------------------------- | ------------------ | -------------------------------------------------------------------------------------------------- |
+| `hotdogwerx-devkit-workspace` | `devkit.workspace` | `.editorconfig`, `dprint.json`, `ci-checks.yaml`, `deploy-docs.yaml`, dprint/actionlint/docs tasks |
+| `hotdogwerx-devkit-python`    | `devkit.python`    | `ruff.toml`, `pydoclint.toml`, ruff/ty/complexipy/pydoclint/pytest tasks                           |
+| `hotdogwerx-devkit-releez`    | `devkit.releez`    | `cliff.toml`, `finalize-release.yaml`, `lint-pr-title.yaml`, `validate-release.yaml`               |
 
 A consumer repo picks the providers it needs in its own `repolish.yaml` — a CLI
-tool (`releez`) doesn't need `devkit-workspace`'s docs-deploy job any more than
-a docs-only repo needs `devkit-releez`.
+tool (`releez`) doesn't need `hotdogwerx-devkit-workspace`'s docs-deploy job any
+more than a docs-only repo needs `hotdogwerx-devkit-releez`.
 
 ## Documentation
 

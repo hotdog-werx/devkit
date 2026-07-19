@@ -7,6 +7,10 @@ on:
         description: 'Use the local ./ action instead of the published hotdog-werx/releez action — for releez to dogfood itself'
         type: boolean
         default: false
+      project:
+        description: 'Optional Releez monorepo project. Empty uses release-branch detection.'
+        type: string
+        default: ''
 
 permissions:
   pull-requests: write
@@ -32,6 +36,7 @@ jobs:
         uses: hotdog-werx/releez@v1
         with:
           mode: validate
+          project: ${{ inputs.project }}
           post-comment: 'true'
 
       - name: Validate release (self action)
@@ -39,4 +44,5 @@ jobs:
         uses: ./
         with:
           mode: validate
+          project: ${{ inputs.project }}
           post-comment: 'true'

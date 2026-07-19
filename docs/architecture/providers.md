@@ -1,7 +1,8 @@
 # Providers
 
-Each devkit package (`devkit-workspace`, `devkit-python`, `devkit-releez`)
-implements a `repolish.Provider` subclass. A provider has three jobs:
+Each devkit package (`hotdogwerx-devkit-workspace`, `hotdogwerx-devkit-python`,
+`hotdogwerx-devkit-releez`) implements a `repolish.Provider` subclass. A
+provider has three jobs:
 
 - **`create_context()`** — build a Pydantic context object with whatever values
   templates need (detected from the consumer's repo, or defaulted).
@@ -19,13 +20,15 @@ providers:
   workspace:
     cli: devkit-workspace-link
     context_overrides:
-      devkit_ref: <immutable-tag-or-sha>
+      workspace_ref: <immutable-tag-or-sha>
   python:
     cli: devkit-python-link
+    context_overrides:
+      python_ref: <immutable-tag-or-sha>
   releez:
     cli: devkit-releez-link
     context_overrides:
-      devkit_ref: <immutable-tag-or-sha>
+      releez_ref: <immutable-tag-or-sha>
 
 providers_order: [workspace, python, releez]
 ```
@@ -37,7 +40,7 @@ installed). Devkit's own repo dogfoods its providers differently — via
 `provider_root: ./packages/devkit-<name>/...` pointing directly at the package
 source, since there's nothing to "install" when you _are_ the provider.
 
-## `devkit-workspace`
+## `hotdogwerx-devkit-workspace`
 
 Repo-agnostic concerns any repo benefits from, regardless of language:
 
@@ -59,7 +62,7 @@ Context detection: `has_python` comes from the loaded provider set and
 from repolish's built-in global context rather than provider-specific Git
 subprocesses.
 
-## `devkit-python`
+## `hotdogwerx-devkit-python`
 
 Python dev tooling — ruff, ty, complexipy, pydoclint, pytest/coverage:
 
@@ -73,12 +76,15 @@ Python dev tooling — ruff, ty, complexipy, pydoclint, pytest/coverage:
   `python:check:complexity`, `python:check:pydoclint`, `python:check:coverage`,
   and `python:uv-sync`, all referenced in place
 
-`create_context()` returns an empty context — this provider has no per-repo
-template variables left to resolve, now that `check-coverage`/
-`check-complexity` detect their own targets at runtime instead (see
+The Python provider owns `python_ref` and emits it through Repolish's typed
+provider-input exchange. The workspace provider receives that value when it
+composes the optional `python-checks` job; this keeps Python's package-specific
+ref out of workspace configuration. Other Python tooling has no per-repo
+template variables because `check-coverage`/`check-complexity` detect their
+targets at runtime (see
 [Mise Tasks](./mise-tasks.md#runtime-detection-over-render-time-templating)).
 
-## `devkit-releez`
+## `hotdogwerx-devkit-releez`
 
 Release/publish/changelog automation:
 

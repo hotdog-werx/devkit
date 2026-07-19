@@ -22,6 +22,7 @@ def test_finalize_release_uses_published_action_by_default():
     )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert 'use-self-action: false' in workflow
+    assert "project: ''" in workflow
 
 
 def test_finalize_release_uses_self_action_when_enabled():
@@ -34,22 +35,34 @@ def test_finalize_release_uses_self_action_when_enabled():
     assert 'use-self-action: true' in workflow
 
 
+def test_release_project_can_be_selected_explicitly():
+    """Finalize and validate forward an optional Releez monorepo project."""
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(project='python'),
+    )
+
+    assert "project: 'python'" in bed.render(FINALIZE_RELEASE_TEMPLATE)
+    assert "project: 'python'" in bed.render(VALIDATE_RELEASE_TEMPLATE)
+
+
 def test_finalize_release_uses_direct_uv_commands_for_build_and_publish():
     """No mise task wrappers: uv build/publish need no indirection, and releez itself handles tag-pulling now."""
     bed = ProviderTestBed(ReleezProvider, ReleezProviderContext())
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert 'build-command: rm -rf dist && uv build' in workflow
+    assert 'build-command: uv build --no-sources' in workflow
     assert 'publish-command: uv publish dist/*' in workflow
+    assert "package-prefix: ''" in workflow
 
 
-def test_finalize_release_references_devkit_ref_reusable_workflow():
-    """The finalize-release workflow pins the reusable workflow to devkit_ref."""
+def test_finalize_release_references_releez_ref_reusable_workflow():
+    """The finalize-release workflow pins the reusable workflow to releez_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(devkit_ref='topic/repolish'),
+        ReleezProviderContext(releez_ref='releez-pin'),
     )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert '__releez_publish.yaml@topic/repolish' in workflow
+    assert '__releez_publish.yaml@releez-pin' in workflow
 
 
 def test_finalize_release_publish_package_defaults_true():
@@ -62,9 +75,8 @@ def test_finalize_release_publish_package_defaults_true():
 def test_finalize_release_publish_package_can_be_disabled():
     """publish_package=False must render `false` for the publish-package input.
 
-    Devkit itself (a bare workspace container with no installable root
-    package) needs tagging/changelog/GitHub Release without a PyPI build+
-    publish step.
+    A docs-only consumer can still tag and create a GitHub Release without a
+    PyPI build/publish step.
     """
     bed = ProviderTestBed(
         ReleezProvider,
@@ -74,14 +86,14 @@ def test_finalize_release_publish_package_can_be_disabled():
     assert 'publish-package: false' in workflow
 
 
-def test_lint_pr_title_references_devkit_ref_reusable_workflow():
-    """The lint-pr-title workflow pins the reusable workflow to devkit_ref."""
+def test_lint_pr_title_references_releez_ref_reusable_workflow():
+    """The lint-pr-title workflow pins the reusable workflow to releez_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(devkit_ref='topic/repolish'),
+        ReleezProviderContext(releez_ref='releez-pin'),
     )
     workflow = bed.render(LINT_PR_TITLE_TEMPLATE)
-    assert '__releez_lint-pr-title.yaml@topic/repolish' in workflow
+    assert '__releez_lint-pr-title.yaml@releez-pin' in workflow
 
 
 def test_lint_pr_title_uses_self_action_when_enabled():
@@ -94,14 +106,14 @@ def test_lint_pr_title_uses_self_action_when_enabled():
     assert 'use-self-action: true' in workflow
 
 
-def test_validate_release_references_devkit_ref_reusable_workflow():
-    """The validate-release workflow pins the reusable workflow to devkit_ref."""
+def test_validate_release_references_releez_ref_reusable_workflow():
+    """The validate-release workflow pins the reusable workflow to releez_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(devkit_ref='topic/repolish'),
+        ReleezProviderContext(releez_ref='releez-pin'),
     )
     workflow = bed.render(VALIDATE_RELEASE_TEMPLATE)
-    assert '__releez_validate-release.yaml@topic/repolish' in workflow
+    assert '__releez_validate-release.yaml@releez-pin' in workflow
 
 
 def test_validate_release_uses_published_action_by_default():

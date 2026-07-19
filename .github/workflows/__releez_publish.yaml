@@ -7,10 +7,14 @@ on:
         description: 'Use the local ./ action instead of the published hotdog-werx/releez action — for releez to dogfood itself'
         type: boolean
         default: false
-      build-command:
-        description: 'Command used to set the build version'
+      project:
+        description: 'Optional Releez monorepo project. Empty uses release-branch detection.'
         type: string
-        default: rm -rf dist && uv build
+        default: ''
+      build-command:
+        description: 'Command used to build publishable distributions'
+        type: string
+        default: uv build --no-sources
       publish-command:
         description: 'Command used to publish the built package'
         type: string
@@ -19,6 +23,10 @@ on:
         description: 'Whether to build and publish a package to PyPI. Set false for repos with no single installable root package (e.g. a bare workspace container) — the tag/changelog/GitHub Release steps still run.'
         type: boolean
         default: true
+      package-prefix:
+        description: 'Prefix added to a monorepo project ID to form its Python distribution name.'
+        type: string
+        default: ''
     secrets:
       PYPI_PUBLISH_TOKEN:
         required: false
@@ -51,6 +59,7 @@ jobs:
         uses: hotdog-werx/releez@v1
         with:
           mode: finalize
+          project: ${{ inputs.project }}
 
       - name: Releez finalize (self action)
         id: releez-self
@@ -58,16 +67,26 @@ jobs:
         uses: ./
         with:
           mode: finalize
+          project: ${{ inputs.project }}
 
       - name: Set build version
         if: inputs.publish-package
-        run: >-
-          uv version
-          ${{ steps.releez-published.outputs.pep440-versions || steps.releez-self.outputs.pep440-versions }}
-          --frozen
+        env:
+          PACKAGE_PREFIX: ${{ inputs.package-prefix }}
+          PROJECT: ${{ steps.releez-published.outputs.project || steps.releez-self.outputs.project }}
+          VERSION: ${{ steps.releez-published.outputs.pep440-version || steps.releez-self.outputs.pep440-version }}
+        run: |
+          if [ -n "$PROJECT" ]; then
+            uv version --package "${PACKAGE_PREFIX}${PROJECT}" "$VERSION" --frozen
+          else
+            uv version "$VERSION" --frozen
+          fi
 
       - name: Build package
         if: inputs.publish-package
+        env:
+          PACKAGE_PREFIX: ${{ inputs.package-prefix }}
+          PROJECT: ${{ steps.releez-published.outputs.project || steps.releez-self.outputs.project }}
         run: ${{ inputs.build-command }}
 
       - name: Publish to PyPI

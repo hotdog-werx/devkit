@@ -1,19 +1,11 @@
-"""Regression tests for the repolish-start/repolish-end anchor mechanism.
+"""Regression tests for Repolish keep-block preprocessing."""
 
-These exist because the anchor marker syntax was initially written wrong
-(`## repolish-anchor[tag]: start` instead of the real
-`## repolish-start[tag]` / `## repolish-end[tag]`), which silently never
-matched repolish's substitution regex — the default anchor text just sat in
-every rendered file unreplaced. Confirming the *real* marker + substitution
-behavior here catches that class of bug for every template that uses anchors.
-"""
-
+import pytest
 from devkit.releez.repolish.models import ReleezProviderContext
 from devkit.releez.repolish.provider import ReleezProvider
 from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
 from jinja2 import Environment, StrictUndefined
-from repolish.preprocessors.anchors import replace_tags_in_content
 from repolish.preprocessors.keep import KeepBlockSpec, apply_keep_replacements
 from repolish.testing import ProviderTestBed
 
@@ -67,72 +59,61 @@ def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
     assert 'repolish-keep-block' not in result
 
 
-def test_workspace_deploy_docs_anchor_marker_is_replaceable():
-    """The additional-deploy-jobs anchor in deploy-docs.yaml accepts a real substitution."""
-    bed = ProviderTestBed(
-        WorkspaceProvider,
-        WorkspaceProviderContext(enable_docs=True),
-    )
-    content = bed.render('.github/workflows/deploy-docs.yaml.jinja')
+@pytest.mark.parametrize(
+    ('provider_type', 'context', 'template_name', 'tag'),
+    [
+        (
+            WorkspaceProvider,
+            WorkspaceProviderContext(enable_docs=True),
+            '.github/workflows/deploy-docs.yaml.jinja',
+            'additional-deploy-jobs',
+        ),
+        (
+            ReleezProvider,
+            ReleezProviderContext(),
+            '.github/workflows/finalize-release.yaml.jinja',
+            'additional-jobs',
+        ),
+        (
+            ReleezProvider,
+            ReleezProviderContext(),
+            '.github/workflows/lint-pr-title.yaml.jinja',
+            'additional-lint-pr-title-jobs',
+        ),
+        (
+            ReleezProvider,
+            ReleezProviderContext(),
+            '.github/workflows/validate-release.yaml.jinja',
+            'additional-validate-release-jobs',
+        ),
+    ],
+)
+def test_additional_job_keep_blocks_preserve_consumer_jobs(
+    provider_type,
+    context,
+    template_name,
+    tag,
+):
+    """Consumer-owned additional jobs survive re-rendering in every workflow."""
+    content = ProviderTestBed(provider_type, context).render(template_name)
+    start_marker = f'  ## start-{tag}'
+    end_marker = f'  ## end-{tag}'
 
-    assert '## repolish-start[additional-deploy-jobs]' in content
-    assert '## repolish-end[additional-deploy-jobs]' in content
+    assert f'repolish-keep-block[{tag}]' in content
+    assert start_marker in content
+    assert end_marker in content
 
-    replaced = replace_tags_in_content(
+    local_content = f'{start_marker}\n  notify:\n    runs-on: ubuntu-latest\n{end_marker}\n'
+    result = apply_keep_replacements(
         content,
-        {'additional-deploy-jobs': 'notify-slack:\n  runs-on: ubuntu-latest'},
+        {tag: KeepBlockSpec(start=start_marker, end=end_marker)},
+        {},
+        {},
+        local_content,
     )
-    assert 'notify-slack:' in replaced
 
-
-def test_releez_finalize_release_anchor_marker_is_replaceable():
-    """The additional-jobs anchor in finalize-release.yaml accepts a real substitution."""
-    bed = ProviderTestBed(
-        ReleezProvider,
-        ReleezProviderContext(use_self_action=False),
-    )
-    content = bed.render('.github/workflows/finalize-release.yaml.jinja')
-
-    assert '## repolish-start[additional-jobs]' in content
-    assert '## repolish-end[additional-jobs]' in content
-
-    replaced = replace_tags_in_content(
-        content,
-        {'additional-jobs': 'notify:\n  runs-on: ubuntu-latest'},
-    )
-    assert 'notify:' in replaced
-
-
-def test_releez_lint_pr_title_anchor_marker_is_replaceable():
-    """The additional-lint-pr-title-jobs anchor in lint-pr-title.yaml accepts a real substitution."""
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext())
-    content = bed.render('.github/workflows/lint-pr-title.yaml.jinja')
-
-    assert '## repolish-start[additional-lint-pr-title-jobs]' in content
-    assert '## repolish-end[additional-lint-pr-title-jobs]' in content
-
-    replaced = replace_tags_in_content(
-        content,
-        {'additional-lint-pr-title-jobs': 'notify:\n  runs-on: ubuntu-latest'},
-    )
-    assert 'notify:' in replaced
-
-
-def test_releez_validate_release_anchor_marker_is_replaceable():
-    """The additional-validate-release-jobs anchor in validate-release.yaml accepts a real substitution."""
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext())
-    content = bed.render('.github/workflows/validate-release.yaml.jinja')
-
-    assert '## repolish-start[additional-validate-release-jobs]' in content
-    assert '## repolish-end[additional-validate-release-jobs]' in content
-
-    replaced = replace_tags_in_content(
-        content,
-        {
-            'additional-validate-release-jobs': 'notify:\n  runs-on: ubuntu-latest',
-        },
-    )
-    assert 'notify:' in replaced
+    assert 'notify:\n    runs-on: ubuntu-latest' in result
+    assert f'repolish-keep-block[{tag}]' not in result
 
 
 def test_keep_block_content_with_github_actions_expressions_survives_raw_wrapping():

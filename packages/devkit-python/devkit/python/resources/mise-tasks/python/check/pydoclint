@@ -3,8 +3,8 @@
 
 The config path is resolved relative to this script's own location (not
 the current working directory), so it works whether this file is reached
-through the `.repolish/devkit-python/` whole-resources-directory symlink
-(consumers installing devkit-python as a package) or a local monorepo path
+through the `.repolish/hotdogwerx-devkit-python/` whole-resources-directory symlink
+(consumers installing hotdogwerx-devkit-python) or a local monorepo path
 (devkit dogfooding itself via `provider_root:`).
 """
 

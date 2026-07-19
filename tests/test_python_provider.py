@@ -22,6 +22,19 @@ def test_render_all_is_empty():
     assert bed.render_all() == {}
 
 
+def test_python_ref_is_provided_to_composing_providers():
+    """The Python provider owns and emits its reusable-workflow ref."""
+    bed = ProviderTestBed(
+        PythonProvider,
+        PythonProviderContext(python_ref='python-pin'),
+    )
+
+    emitted = bed.provide_inputs()
+
+    assert len(emitted) == 1
+    assert emitted[0].model_dump() == {'python_ref': 'python-pin'}
+
+
 def test_ruff_toml_is_valid_toml():
     """The shared ruff.toml parses and sets the expected docstring convention."""
     parsed = tomllib.loads(_RUFF_TOML)

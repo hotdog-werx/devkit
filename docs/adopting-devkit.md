@@ -17,9 +17,9 @@ environments:
   - name: repolish
     requirements: |
       repolish
-      git+https://github.com/hotdog-werx/devkit.git@v1#subdirectory=packages/devkit-workspace
-      git+https://github.com/hotdog-werx/devkit.git@v1#subdirectory=packages/devkit-python
-      git+https://github.com/hotdog-werx/devkit.git@v1#subdirectory=packages/devkit-releez
+      hotdogwerx-devkit-workspace
+      hotdogwerx-devkit-python
+      hotdogwerx-devkit-releez
     executables:
       - repolish
       - devkit-workspace-link
@@ -27,7 +27,9 @@ environments:
       - devkit-releez-link
 ```
 
-Pin provider packages and reusable workflows to the same immutable release.
+Pin each provider package and its reusable workflows to matching immutable
+versions/refs. They are separate distributions even when a devkit release
+publishes all three together.
 
 After editing `uv-toolbox.yaml`, regenerate and verify the lockfile:
 
@@ -44,13 +46,15 @@ providers:
   workspace:
     cli: devkit-workspace-link
     context_overrides:
-      devkit_ref: <immutable-tag-or-sha>
+      workspace_ref: <immutable-tag-or-sha>
   python:
     cli: devkit-python-link
+    context_overrides:
+      python_ref: <immutable-tag-or-sha>
   releez:
     cli: devkit-releez-link
     context_overrides:
-      devkit_ref: <immutable-tag-or-sha>
+      releez_ref: <immutable-tag-or-sha>
 
 providers_order: [workspace, python, releez]
 
@@ -89,9 +93,9 @@ going forward.
 
 `repolish link` (not `repolish apply`) is what belongs in a postinstall hook —
 it only materializes the whole-resources-directory symlinks
-(`.repolish/devkit-<name>/`, used by every referenced-in-place mise task) and
-the static config symlinks (`.editorconfig`, `dprint.json`). It's safe to run on
-every `mise install` without review. `repolish apply` actually
+(`.repolish/hotdogwerx-devkit-<name>/`, used by every referenced-in-place mise
+task) and the static config symlinks (`.editorconfig`, `dprint.json`). It's safe
+to run on every `mise install` without review. `repolish apply` actually
 writes/regenerates tracked files and should stay a manual, reviewed operation
 (`mise run workspace:repolish:check`/an explicit `repolish
 apply`), not
@@ -103,9 +107,9 @@ something that runs silently on every install.
 [task_config]
 includes = [
   "mise-tasks",
-  ".repolish/devkit-workspace/mise-tasks",
-  ".repolish/devkit-workspace/mise-tasks.toml",
-  ".repolish/devkit-python/mise-tasks",
+  ".repolish/hotdogwerx-devkit-workspace/mise-tasks",
+  ".repolish/hotdogwerx-devkit-workspace/mise-tasks.toml",
+  ".repolish/hotdogwerx-devkit-python/mise-tasks",
 ]
 ```
 
@@ -116,10 +120,10 @@ copy-pasting any task definitions.
 ## 5. Add the `[tool.ruff]`/`[tool.coverage.*]` pyproject.toml fragment
 
 Copy `resources/templates/pyproject-fragments/python.toml` from the
-`devkit-python` package into your own `pyproject.toml` — this is a reference
-doc, not auto-merged, so it needs a one-time manual copy. Adjust the
-`[tool.ruff] extend` path if you're dogfooding devkit-python locally via
-`provider_root:` instead of consuming it as a package (see that file's own
+`hotdogwerx-devkit-python` package into your own `pyproject.toml` — this is a
+reference doc, not auto-merged, so it needs a one-time manual copy. Adjust the
+`[tool.ruff] extend` path if you're dogfooding hotdogwerx-devkit-python locally
+via `provider_root:` instead of consuming it as a package (see that file's own
 comments for the local-path variant).
 
 ## 6. Run `mise install` and verify

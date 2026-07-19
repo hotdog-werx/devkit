@@ -1,4 +1,4 @@
-# devkit-python
+# hotdogwerx-devkit-python
 
 Repolish provider for Python tooling: ruff, ty, complexipy, pydoclint,
 pytest/coverage config, and the Python CI check workflow.
@@ -13,9 +13,9 @@ This package ships:
 - A reference `pyproject.toml` fragment for settings that must remain in each
   consumer's own project configuration.
 
-Note: `devkit.workspace` (package `devkit-workspace`) applies first in any
-consumer repo and owns repo-wide concerns like `dprint`/`.editorconfig`; this
-provider only covers Python-specific tooling.
+Note: `devkit.workspace` (package `hotdogwerx-devkit-workspace`) applies first
+in any consumer repo and owns repo-wide concerns like `dprint`/`.editorconfig`;
+this provider only covers Python-specific tooling.
 
 ## Provider
 

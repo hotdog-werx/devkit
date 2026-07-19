@@ -18,22 +18,23 @@ without a per-file symlink.
 ## Anchors: provider-computed, not preserved
 
 ```
-## repolish-start[additional-deploy-jobs]
-## post-deploy jobs — add your custom jobs here
-## repolish-end[additional-deploy-jobs]
+## repolish-start[provider-computed]
+## default content supplied by the provider
+## repolish-end[provider-computed]
 ```
 
 A plain anchor's replacement value comes from the provider's `create_anchors()`
 — repolish always substitutes whatever that method returns, **every time**,
 regardless of what's currently between the markers in the consumer's file. This
-is correct for a static placeholder comment (which is all `create_anchors()`
-typically returns), but it means anchors **cannot preserve arbitrary content a
+is correct for provider-computed content that can also be overridden through
+`repolish.yaml`, but it means anchors **cannot preserve arbitrary content a
 consumer wrote there** — a real job definition placed between anchor markers
 gets silently discarded on the next `repolish apply`.
 
 ## Keep-block / keep-rest: preserves local content
 
-For content that genuinely needs to survive re-applies — most notably,
+For content that genuinely needs to survive re-applies — including every
+provider-managed workflow's additional-jobs region and, most notably,
 `ci-checks.yaml`'s consumer-specific jobs (GitHub Actions `needs:` only resolves
 within one file, so a job depending on `repo-checks`/ `python-checks` can't live
 in a separate workflow file) — use a keep directive instead:
