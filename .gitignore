@@ -1,3 +1,10 @@
-.venv
-.editorconfig
-__pycache__
+.venv/
+__pycache__/
+*.pyc
+/.editorconfig
+/dprint.json
+.repolish/
+dist/
+.coverage-files/
+.coverage
+site/

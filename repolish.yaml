@@ -1,2 +1,48 @@
 providers:
-  workspace: devkit-workspace-link
+  workspace:
+    provider_root: ./packages/devkit-workspace/devkit/workspace/resources/templates
+    # resources_dir defaults to provider_root when omitted — but the
+    # workspace provider's symlinks (configs/.editorconfig, configs/dprint.json)
+    # live in resources/configs/, a sibling of resources/templates/, not
+    # under it. Point resources_dir at the parent so symlink sources resolve.
+    resources_dir: ./packages/devkit-workspace/devkit/workspace/resources
+    context_overrides:
+      # devkit hasn't cut a tagged release yet, and this content isn't on
+      # master either — self-render against the branch actually being
+      # worked on, or devkit's own rendered workflows reference reusable
+      # workflows that don't exist yet at the ref they point to.
+      workspace_ref: topic/repolish
+      # Preserves the OS matrix the old codeguide/pkglink-based config
+      # (ci_operating_systems) already ran before this migration.
+      python_operating_systems: [ubuntu-latest, windows-latest]
+  python:
+    provider_root: ./packages/devkit-python/devkit/python/resources/templates
+    context_overrides:
+      python_ref: topic/repolish
+  releez:
+    provider_root: ./packages/devkit-releez/devkit/releez/resources/templates
+    context_overrides:
+      releez_ref: topic/repolish
+      package_prefix: hotdogwerx-devkit-
+      build_command: uv build --package "${PACKAGE_PREFIX}${PROJECT}" --no-sources
+      publish_package: true
+
+providers_order:
+  - workspace
+  - python
+  - releez
+
+# repolish renders content; dprint is what makes it canonical. Run it
+# automatically after every apply so the repo never sits in a state
+# check-dprint would immediately flag as drift.
+#
+# Must be `mise run workspace:dprint:format`, not a bare `dprint fmt` —
+# post_process commands run with cwd set to repolish's internal staging
+# directory (.repolish/_/render/repolish), not the project root, and
+# entries aren't shell-interpreted (no $VAR expansion, no command
+# substitution), so a bare dprint can't discover the real dprint.json.
+# `mise run` does its own upward directory search for mise.toml the same
+# way git finds .git, so it still resolves correctly from deep inside the
+# staging directory.
+post_process:
+  - mise run workspace:dprint:format

@@ -1,0 +1,97 @@
+name: releez-publish
+
+on:
+  workflow_call:
+    inputs:
+      use-self-action:
+        description: 'Use the local ./ action instead of the published hotdog-werx/releez action — for releez to dogfood itself'
+        type: boolean
+        default: false
+      build-command:
+        description: 'Command used to build publishable distributions'
+        type: string
+        default: uv build --no-sources
+      publish-command:
+        description: 'Command used to publish the built package'
+        type: string
+        default: uv publish dist/*
+      publish-package:
+        description: 'Whether to build and publish a package to PyPI. Set false for repos with no single installable root package (e.g. a bare workspace container) — the tag/changelog/GitHub Release steps still run.'
+        type: boolean
+        default: true
+      package-prefix:
+        description: 'Prefix added to a monorepo project ID to form its Python distribution name.'
+        type: string
+        default: ''
+    secrets:
+      PYPI_PUBLISH_TOKEN:
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Finalize release
+    runs-on: ubuntu-latest
+    if: >
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install mise tools
+        uses: jdx/mise-action@v4
+
+      # `uses:` can't reference an expression — it must be a static string —
+      # so selecting between the published action and the local self-action
+      # needs two mutually-exclusive steps instead of one dynamic uses:.
+      - name: Releez finalize (published action)
+        id: releez-published
+        if: '!inputs.use-self-action'
+        uses: hotdog-werx/releez@v1
+        with:
+          mode: finalize
+
+      - name: Releez finalize (self action)
+        id: releez-self
+        if: inputs.use-self-action
+        uses: ./
+        with:
+          mode: finalize
+
+      - name: Set build version
+        if: inputs.publish-package
+        env:
+          PACKAGE_PREFIX: ${{ inputs.package-prefix }}
+          PROJECT: ${{ steps.releez-published.outputs.project || steps.releez-self.outputs.project }}
+          VERSION: ${{ steps.releez-published.outputs.pep440-version || steps.releez-self.outputs.pep440-version }}
+        run: |
+          if [ -n "$PROJECT" ]; then
+            uv version --package "${PACKAGE_PREFIX}${PROJECT}" "$VERSION" --frozen
+          else
+            uv version "$VERSION" --frozen
+          fi
+
+      - name: Build package
+        if: inputs.publish-package
+        env:
+          PACKAGE_PREFIX: ${{ inputs.package-prefix }}
+          PROJECT: ${{ steps.releez-published.outputs.project || steps.releez-self.outputs.project }}
+        run: ${{ inputs.build-command }}
+
+      - name: Publish to PyPI
+        if: inputs.publish-package
+        env:
+          UV_PUBLISH_URL: ${{ vars.PYPI_PUBLISH_URL }}
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_PUBLISH_TOKEN }}
+        run: ${{ inputs.publish-command }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.releez-published.outputs.release-version || steps.releez-self.outputs.release-version }}
+          body: ${{ steps.releez-published.outputs.release-notes || steps.releez-self.outputs.release-notes }}

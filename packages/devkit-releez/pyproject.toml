@@ -1,0 +1,32 @@
+[project]
+name = "hotdogwerx-devkit-releez"
+description = "Repolish provider: release, publish, and changelog automation"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+version = "0.1.0"
+keywords = ["automation", "development", "release", "repolish"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+  "repolish >=1.4.0, <2",
+]
+
+[project.scripts]
+devkit-releez-link = "devkit.releez.repolish.linker:main"
+
+[project.urls]
+Documentation = "https://hotdog-werx.github.io/devkit/"
+Issues = "https://github.com/hotdog-werx/devkit/issues"
+Repository = "https://github.com/hotdog-werx/devkit"
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "devkit.releez"
+module-root = "."

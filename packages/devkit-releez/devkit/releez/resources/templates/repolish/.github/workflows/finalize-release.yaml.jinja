@@ -1,0 +1,27 @@
+# {{ generated_header }}
+name: Finalize release
+
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    uses: hotdog-werx/devkit/.github/workflows/__releez_publish.yaml@{{ releez_ref }}
+    with:
+      use-self-action: {{ use_self_action | lower }}
+      publish-package: {{ publish_package | lower }}
+      package-prefix: '{{ package_prefix }}'
+      build-command: {{ build_command }}
+      publish-command: {{ publish_command }}
+    secrets:
+      PYPI_PUBLISH_TOKEN: {% raw %}${{ secrets.PYPI_PUBLISH_TOKEN }}{% endraw %}
+
+## repolish-keep-block[additional-jobs]: start="  ## start-additional-jobs" end="  ## end-additional-jobs"
+  ## start-additional-jobs
+  ## post-release jobs — add your custom jobs here
+  ## end-additional-jobs

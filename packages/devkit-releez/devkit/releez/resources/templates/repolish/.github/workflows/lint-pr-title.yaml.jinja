@@ -1,0 +1,26 @@
+# {{ generated_header }}
+name: Lint PR
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+
+# A reusable workflow can never exceed the permissions granted here by the
+# calling (this) workflow, regardless of what it declares for itself.
+permissions:
+  contents: read
+
+jobs:
+  lint-pr-title:
+    uses: hotdog-werx/devkit/.github/workflows/__releez_lint-pr-title.yaml@{{ releez_ref }}
+    with:
+      use-self-action: {{ use_self_action | lower }}
+
+## repolish-keep-block[additional-lint-pr-title-jobs]: start="  ## start-additional-lint-pr-title-jobs" end="  ## end-additional-lint-pr-title-jobs"
+  ## start-additional-lint-pr-title-jobs
+  ## post-lint-pr-title jobs — add your custom jobs here
+  ## end-additional-lint-pr-title-jobs

@@ -1,0 +1,23 @@
+["workspace:dprint:format"]
+usage = '''
+arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
+'''
+run = "dprint fmt ${usage_files}"
+
+["workspace:dprint:check"]
+run = "dprint check"
+
+["workspace:actionlint:check"]
+run = "actionlint"
+
+["workspace:repolish:check"]
+run = "uv-toolbox exec --env repolish -- repolish apply --check"
+
+["workspace:repolish:link"]
+run = "uv-toolbox exec --env repolish -- repolish link"
+
+["workspace:docs:dev"]
+run = "zensical serve --dev-addr=127.0.0.1:8000 --open"
+
+["workspace:docs:build"]
+run = "zensical build --clean"

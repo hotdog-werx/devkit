@@ -1,0 +1,23 @@
+# {{ generated_header }}
+name: deploy-docs
+
+on:
+  push:
+    branches: [master]
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  deploy-docs:
+    uses: hotdog-werx/devkit/.github/workflows/__workspace_deploy-docs.yaml@{{ workspace_ref }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+## repolish-keep-block[additional-deploy-jobs]: start="  ## start-additional-deploy-jobs" end="  ## end-additional-deploy-jobs"
+  ## start-additional-deploy-jobs
+  ## post-deploy jobs — add your custom jobs here
+  ## end-additional-deploy-jobs

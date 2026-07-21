@@ -1,8 +1,32 @@
+[project]
+name = "devkit"
+version = "0.0.0"
+description = "Shared repolish providers, mise tasks, and CI workflows for hotdog-werx repos"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = []
+
 [tool.uv]
 package = false
 
 [tool.uv.workspace]
 members = ["packages/*"]
+
+[[tool.releez.projects]]
+name = "workspace"
+path = "packages/devkit-workspace"
+tag-prefix = "workspace-"
+
+[[tool.releez.projects]]
+name = "python"
+path = "packages/devkit-python"
+tag-prefix = "python-"
+
+[[tool.releez.projects]]
+name = "releez"
+path = "packages/devkit-releez"
+tag-prefix = "releez-"
 
 [dependency-groups]
 dev = [
@@ -11,6 +35,41 @@ dev = [
   "pytest-cov >= 6.2.1",
   "ty >= 0.0.16",
 ]
-repolish = [
-  "repolish >= 1.0.0"
+
+# devkit dogfoods devkit-python locally (provider_root:, not an installed
+# package), so there's no `.repolish/hotdogwerx-devkit-python` symlink to reference —
+# extend directly from the package's own config instead.
+[tool.ruff]
+extend = "./packages/devkit-python/devkit/python/resources/configs/ruff.toml"
+
+# Tests still need a docstring (google-style, per [lint.pydocstyle] in the
+# shared config) — D101/D102/D103 are deliberately NOT ignored here. Only
+# the requirement to document every argument is loosened (D417); pydoclint
+# skips tests entirely (see pydoclint.toml's exclude), since its
+# signature/docstring arg-matching checks are stricter than ruff's.
+[tool.ruff.lint.per-file-ignores]
+"**/tests/*.py" = [
+  "ANN001", # Allow untyped fixture arguments
+  "ANN201", # Allow tests to not have a return type
+  "ARG001", # Ignore unused arguments in tests - sometimes required for fixtures
+  "D417", # Don't require documenting every argument in test docstrings
+  "INP001", # Test dirs don't need __init__.py
+  "PT004", # Allow none-returning fixtures to not lead with underscore due to ty conflict
+  "S101", # Please sir may I use assert in my tests?
+  "S701", # Jinja Environment() without autoescape is fine for non-HTML template tests
 ]
+"**/resources/templates/repolish.py" = [
+  "INP001", # This file is loaded by path (provider_root: self-dogfood), not as a package member
+]
+
+[tool.coverage.html]
+directory = ".coverage-files/htmlcov"
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "if __name__ == .__main__.:",
+  "if typing.TYPE_CHECKING:",
+  "\\.\\.\\.",
+]
+show_missing = true

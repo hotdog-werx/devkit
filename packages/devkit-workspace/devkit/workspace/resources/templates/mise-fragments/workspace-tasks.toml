@@ -1,0 +1,56 @@
+[tasks."workspace:dprint:format"]
+usage = '''
+arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
+'''
+run = "dprint fmt ${usage_files}"
+
+[tasks."workspace:dprint:check"]
+run = "dprint check"
+
+[tasks."workspace:actionlint:check"]
+run = "actionlint"
+
+[tasks."workspace:repolish:check"]
+run = "uv-toolbox exec --env repolish -- repolish apply --check"
+
+[tasks."workspace:docs:dev"]
+run = "zensical serve --dev-addr=127.0.0.1:8000"
+
+[tasks."workspace:docs:build"]
+run = "zensical build --clean"
+
+[tasks."workspace:docs:clean"]
+run = "rm -rf site/"
+
+[tasks.setup]
+depends = ["python:uv-sync", "workspace:pnpm-install"]
+run = "echo Ready!"
+
+[tasks.repo-checks]
+depends = [
+  "workspace:dprint:check",
+  "workspace:actionlint:check",
+  "workspace:repolish:check",
+]
+
+# --- postinstall hooks (add to [hooks] postinstall in the consumer's own
+# mise.toml) ---
+# uv-toolbox install provisions the "repolish" env (repolish + devkit
+# provider packages) before repolish link can use it. repolish link then
+# materializes provider-resource symlinks (.editorconfig, dprint.json) —
+# never committed to git (their symlink source is an absolute path,
+# portable only within the machine that created it), so every environment
+# links them fresh on every `mise install`.
+#
+# A single multi-line string (one subprocess, sequential) is used instead of
+# an array of strings (one subprocess per entry) — newer mise releases (seen
+# on 2026.7.5 in CI, not on 2026.5.15 locally) only ran the last array entry,
+# silently dropping the earlier ones. The multi-line-string form isn't
+# subject to that per-entry dispatch at all, so it isn't exposed to the bug.
+#
+# [hooks]
+# postinstall = """
+# uv-toolbox install
+# uv-toolbox exec --env repolish -- repolish link
+# mise run workspace:setup-hook
+# """

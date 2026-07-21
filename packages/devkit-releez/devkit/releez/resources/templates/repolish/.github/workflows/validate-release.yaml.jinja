@@ -1,0 +1,27 @@
+# {{ generated_header }}
+name: Validate release
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+
+# A reusable workflow can never exceed the permissions granted here by the
+# calling (this) workflow, regardless of what it declares for itself.
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  validate-release:
+    uses: hotdog-werx/devkit/.github/workflows/__releez_validate-release.yaml@{{ releez_ref }}
+    with:
+      use-self-action: {{ use_self_action | lower }}
+
+## repolish-keep-block[additional-validate-release-jobs]: start="  ## start-additional-validate-release-jobs" end="  ## end-additional-validate-release-jobs"
+  ## start-additional-validate-release-jobs
+  ## post-validate-release jobs — add your custom jobs here
+  ## end-additional-validate-release-jobs

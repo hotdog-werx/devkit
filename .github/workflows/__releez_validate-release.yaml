@@ -1,0 +1,42 @@
+name: releez-validate-release
+
+on:
+  workflow_call:
+    inputs:
+      use-self-action:
+        description: 'Use the local ./ action instead of the published hotdog-werx/releez action — for releez to dogfood itself'
+        type: boolean
+        default: false
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  validate:
+    name: Validate release PR
+    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'release/')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      # `uses:` can't reference an expression — it must be a static string —
+      # so selecting between the published action and the local self-action
+      # needs two mutually-exclusive steps instead of one dynamic uses:.
+      - name: Validate release (published action)
+        if: '!inputs.use-self-action'
+        uses: hotdog-werx/releez@v1
+        with:
+          mode: validate
+          post-comment: 'true'
+
+      - name: Validate release (self action)
+        if: inputs.use-self-action
+        uses: ./
+        with:
+          mode: validate
+          post-comment: 'true'
