@@ -20,7 +20,6 @@ jobs:
     uses: hotdog-werx/devkit/.github/workflows/__releez_validate-release.yaml@topic/repolish
     with:
       use-self-action: false
-      project: ''
 
   ## start-additional-validate-release-jobs
   ## post-validate-release jobs — add your custom jobs here

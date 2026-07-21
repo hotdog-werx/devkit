@@ -9,7 +9,6 @@ class ReleezProviderContext(BaseContext):
     build_command: str = 'uv build --no-sources'
     publish_command: str = 'uv publish dist/*'
     package_prefix: str = ''
-    project: str = ''
     use_self_action: bool = False
     # Some consumers only want tagging/changelog/GitHub Release behavior,
     # without a Python package build and publish step.

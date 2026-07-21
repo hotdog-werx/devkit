@@ -1,4 +1,5 @@
 import tomllib
+from pathlib import Path
 
 from devkit.releez.repolish.models import ReleezProviderContext
 from devkit.releez.repolish.provider import ReleezProvider
@@ -12,6 +13,7 @@ FINALIZE_RELEASE_TEMPLATE = '.github/workflows/finalize-release.yaml.jinja'
 LINT_PR_TITLE_TEMPLATE = '.github/workflows/lint-pr-title.yaml.jinja'
 VALIDATE_RELEASE_TEMPLATE = '.github/workflows/validate-release.yaml.jinja'
 CLIFF_TOML_TEMPLATE = 'cliff.toml.jinja'
+REUSABLE_WORKFLOW_DIR = Path(__file__).parents[1] / '.github' / 'workflows'
 
 
 def test_finalize_release_uses_published_action_by_default():
@@ -22,7 +24,6 @@ def test_finalize_release_uses_published_action_by_default():
     )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
     assert 'use-self-action: false' in workflow
-    assert "project: ''" in workflow
 
 
 def test_finalize_release_uses_self_action_when_enabled():
@@ -35,15 +36,15 @@ def test_finalize_release_uses_self_action_when_enabled():
     assert 'use-self-action: true' in workflow
 
 
-def test_release_project_can_be_selected_explicitly():
-    """Finalize and validate forward an optional Releez monorepo project."""
-    bed = ProviderTestBed(
-        ReleezProvider,
-        ReleezProviderContext(project='python'),
-    )
+def test_release_project_comes_from_finalize_output():
+    """The publish workflow uses the project detected by Releez finalize."""
+    publish = (REUSABLE_WORKFLOW_DIR / '__releez_publish.yaml').read_text()
+    validate = (REUSABLE_WORKFLOW_DIR / '__releez_validate-release.yaml').read_text()
 
-    assert "project: 'python'" in bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert "project: 'python'" in bed.render(VALIDATE_RELEASE_TEMPLATE)
+    expected = 'PROJECT: ${{ steps.releez-published.outputs.project || steps.releez-self.outputs.project }}'
+    assert publish.count(expected) == 2
+    assert 'inputs.project' not in publish
+    assert 'project:' not in validate
 
 
 def test_finalize_release_uses_direct_uv_commands_for_build_and_publish():

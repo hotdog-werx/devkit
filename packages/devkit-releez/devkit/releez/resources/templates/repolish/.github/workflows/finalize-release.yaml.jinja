@@ -14,7 +14,6 @@ jobs:
     uses: hotdog-werx/devkit/.github/workflows/__releez_publish.yaml@{{ releez_ref }}
     with:
       use-self-action: {{ use_self_action | lower }}
-      project: '{{ project }}'
       publish-package: {{ publish_package | lower }}
       package-prefix: '{{ package_prefix }}'
       build-command: {{ build_command }}

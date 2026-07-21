@@ -14,7 +14,6 @@ jobs:
     uses: hotdog-werx/devkit/.github/workflows/__releez_publish.yaml@topic/repolish
     with:
       use-self-action: false
-      project: ''
       publish-package: true
       package-prefix: 'hotdogwerx-devkit-'
       build-command: uv build --package "${PACKAGE_PREFIX}${PROJECT}" --no-sources

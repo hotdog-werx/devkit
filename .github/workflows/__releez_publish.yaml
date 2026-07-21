@@ -7,10 +7,6 @@ on:
         description: 'Use the local ./ action instead of the published hotdog-werx/releez action — for releez to dogfood itself'
         type: boolean
         default: false
-      project:
-        description: 'Optional Releez monorepo project. Empty uses release-branch detection.'
-        type: string
-        default: ''
       build-command:
         description: 'Command used to build publishable distributions'
         type: string
@@ -59,7 +55,6 @@ jobs:
         uses: hotdog-werx/releez@v1
         with:
           mode: finalize
-          project: ${{ inputs.project }}
 
       - name: Releez finalize (self action)
         id: releez-self
@@ -67,7 +62,6 @@ jobs:
         uses: ./
         with:
           mode: finalize
-          project: ${{ inputs.project }}
 
       - name: Set build version
         if: inputs.publish-package
