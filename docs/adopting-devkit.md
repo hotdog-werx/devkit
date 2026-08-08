@@ -17,9 +17,9 @@ environments:
   - name: repolish
     requirements: |
       repolish
-      hotdogwerx-devkit-workspace
-      hotdogwerx-devkit-python
-      hotdogwerx-devkit-releez
+      git+https://github.com/hotdog-werx/devkit.git@<devkit-ref>#subdirectory=packages/devkit-workspace
+      git+https://github.com/hotdog-werx/devkit.git@<devkit-ref>#subdirectory=packages/devkit-python
+      git+https://github.com/hotdog-werx/devkit.git@<devkit-ref>#subdirectory=packages/devkit-releez
     executables:
       - repolish
       - devkit-workspace-link
@@ -27,9 +27,9 @@ environments:
       - devkit-releez-link
 ```
 
-Pin each provider package and its reusable workflows to matching immutable
-versions/refs. They are separate distributions even when a devkit release
-publishes all three together.
+Install every selected provider and reference every reusable workflow from one
+immutable Devkit Git snapshot. The three Releez projects retain independent
+versions, changelogs, and release tags; Devkit does not publish them to PyPI.
 
 After editing `uv-toolbox.yaml`, regenerate and verify the lockfile:
 
@@ -46,15 +46,13 @@ providers:
   workspace:
     cli: devkit-workspace-link
     context_overrides:
-      workspace_ref: <immutable-tag-or-sha>
+      devkit_ref: &devkit-ref <immutable-tag-or-sha>
   python:
     cli: devkit-python-link
-    context_overrides:
-      python_ref: <immutable-tag-or-sha>
   releez:
     cli: devkit-releez-link
     context_overrides:
-      releez_ref: <immutable-tag-or-sha>
+      devkit_ref: *devkit-ref
 
 providers_order: [workspace, python, releez]
 

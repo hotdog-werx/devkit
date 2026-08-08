@@ -1,12 +1,12 @@
 from devkit.python.repolish.models import (
     PythonProviderContext,
-    PythonWorkflowInputs,
+    PythonProviderInputs,
 )
-from repolish import BaseInputs, ProvideInputsOptions, Provider, TemplateMapping
+from repolish import Provider, TemplateMapping
 from typing_extensions import override
 
 
-class PythonProvider(Provider[PythonProviderContext, BaseInputs]):
+class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
     """Repolish provider for Python dev tooling.
 
     Covers ruff, ty, complexipy, pydoclint, and pytest/coverage config.
@@ -26,17 +26,9 @@ class PythonProvider(Provider[PythonProviderContext, BaseInputs]):
 
         Returns:
             PythonProviderContext: Python-owned provider settings at their
-            defaults, including the reusable-workflow ref.
+        defaults.
         """
         return PythonProviderContext()
-
-    @override
-    def provide_inputs(
-        self,
-        opt: ProvideInputsOptions[PythonProviderContext],
-    ) -> list[BaseInputs]:
-        """Supply the Python reusable-workflow ref to composing providers."""
-        return [PythonWorkflowInputs(python_ref=opt.own_context.python_ref)]
 
     @override
     def create_file_mappings(

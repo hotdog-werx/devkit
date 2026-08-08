@@ -1,8 +1,5 @@
 import pytest
-from devkit.workspace.repolish.models import (
-    WorkspaceProviderContext,
-    WorkspaceProviderInputs,
-)
+from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
 from devkit.workspace.repolish.provider._shared import _SharedWorkspaceBehavior
 from repolish import ProviderEntry
@@ -40,8 +37,7 @@ def bed_docs_and_python() -> ProviderTestBed:
         WorkspaceProviderContext(
             enable_docs=True,
             has_python=True,
-            workspace_ref='workspace-pin',
-            python_ref='python-pin',
+            devkit_ref='devkit-pin',
         ),
     )
 
@@ -70,20 +66,6 @@ def test_finalize_context_preserves_explicit_python_override() -> None:
     )
 
     assert resolved.has_python is False
-
-
-def test_finalize_context_receives_python_ref() -> None:
-    """Workspace composes CI using the ref owned by the Python provider."""
-    bed = ProviderTestBed(
-        WorkspaceProvider,
-        WorkspaceProviderContext(has_python=True),
-    )
-
-    resolved = bed.finalize(
-        [WorkspaceProviderInputs(python_ref='python-pin')],
-    )
-
-    assert resolved.python_ref == 'python-pin'
 
 
 def test_file_mappings_omit_deploy_docs_when_disabled(bed_no_docs_no_python):
@@ -170,13 +152,13 @@ def test_ci_checks_passes_operating_systems_and_codecov_to_python_checks():
     assert 'secrets: inherit' not in content
 
 
-def test_ci_checks_references_independent_provider_refs(
+def test_ci_checks_references_single_devkit_ref(
     bed_docs_and_python,
 ):
-    """Each reusable workflow uses its independently published provider ref."""
+    """All reusable workflows use the same tested Devkit snapshot."""
     content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
-    assert '__workspace_repo-checks.yaml@workspace-pin' in content
-    assert '__python_python-checks.yaml@python-pin' in content
+    assert '__workspace_repo-checks.yaml@devkit-pin' in content
+    assert '__python_python-checks.yaml@devkit-pin' in content
 
 
 def test_enable_docs_passed_through_to_repo_checks_input(bed_docs_and_python):
@@ -191,9 +173,9 @@ def test_enable_docs_false_passed_through(bed_no_docs_no_python):
     assert 'enable-docs: false' in content
 
 
-def test_deploy_docs_references_workspace_ref(bed_docs_and_python):
-    """deploy-docs.yaml pins the reusable workflow to workspace_ref."""
+def test_deploy_docs_references_devkit_ref(bed_docs_and_python):
+    """deploy-docs.yaml pins the reusable workflow to devkit_ref."""
     content = bed_docs_and_python.render(
         '.github/workflows/deploy-docs.yaml.jinja',
     )
-    assert '__workspace_deploy-docs.yaml@workspace-pin' in content
+    assert '__workspace_deploy-docs.yaml@devkit-pin' in content

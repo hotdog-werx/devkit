@@ -11,21 +11,20 @@ providers:
       # master either — self-render against the branch actually being
       # worked on, or devkit's own rendered workflows reference reusable
       # workflows that don't exist yet at the ref they point to.
-      workspace_ref: topic/repolish
+      devkit_ref: &devkit-ref topic/repolish
       # Preserves the OS matrix the old codeguide/pkglink-based config
       # (ci_operating_systems) already ran before this migration.
       python_operating_systems: [ubuntu-latest, windows-latest]
   python:
     provider_root: ./packages/devkit-python/devkit/python/resources/templates
-    context_overrides:
-      python_ref: topic/repolish
   releez:
     provider_root: ./packages/devkit-releez/devkit/releez/resources/templates
     context_overrides:
-      releez_ref: topic/repolish
-      package_prefix: hotdogwerx-devkit-
-      build_command: uv build --package "${PACKAGE_PREFIX}${PROJECT}" --no-sources
-      publish_package: true
+      devkit_ref: *devkit-ref
+      # Devkit releases/tags its three Releez projects independently, but the
+      # provider packages are installed directly from those Git refs rather
+      # than published to PyPI.
+      publish_package: false
 
 providers_order:
   - workspace

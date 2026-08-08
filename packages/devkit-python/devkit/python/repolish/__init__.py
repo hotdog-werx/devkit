@@ -1,7 +1,7 @@
 from devkit.python.repolish.models import (
     PythonProviderContext,
-    PythonWorkflowInputs,
+    PythonProviderInputs,
 )
 from devkit.python.repolish.provider import PythonProvider
 
-__all__ = ['PythonProvider', 'PythonProviderContext', 'PythonWorkflowInputs']
+__all__ = ['PythonProvider', 'PythonProviderContext', 'PythonProviderInputs']

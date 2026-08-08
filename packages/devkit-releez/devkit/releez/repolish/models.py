@@ -5,7 +5,7 @@ from repolish import BaseContext, BaseInputs
 class ReleezProviderContext(BaseContext):
     """Context for the ReleezProvider."""
 
-    releez_ref: str = 'master'
+    devkit_ref: str = 'master'
     build_command: str = 'uv build --no-sources'
     publish_command: str = 'uv publish dist/*'
     package_prefix: str = ''

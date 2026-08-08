@@ -34,11 +34,8 @@ class _SharedWorkspaceBehavior(
             WorkspaceProviderInputs,
         ],
     ) -> WorkspaceProviderContext:
-        """Merge Python provider settings and detect whether Python is enabled."""
+        """Detect whether Python support is enabled for the workspace."""
         updates: dict[str, object] = {}
-        if opt.received_inputs:
-            updates['python_ref'] = opt.received_inputs[-1].python_ref
-
         if opt.own_context.has_python is None:
             updates['has_python'] = any(
                 entry.alias == 'python'

@@ -56,14 +56,14 @@ def test_finalize_release_uses_direct_uv_commands_for_build_and_publish():
     assert "package-prefix: ''" in workflow
 
 
-def test_finalize_release_references_releez_ref_reusable_workflow():
-    """The finalize-release workflow pins the reusable workflow to releez_ref."""
+def test_finalize_release_references_devkit_ref_reusable_workflow():
+    """The finalize-release workflow pins the reusable workflow to devkit_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(releez_ref='releez-pin'),
+        ReleezProviderContext(devkit_ref='devkit-pin'),
     )
     workflow = bed.render(FINALIZE_RELEASE_TEMPLATE)
-    assert '__releez_publish.yaml@releez-pin' in workflow
+    assert '__releez_publish.yaml@devkit-pin' in workflow
 
 
 def test_finalize_release_publish_package_defaults_true():
@@ -87,14 +87,14 @@ def test_finalize_release_publish_package_can_be_disabled():
     assert 'publish-package: false' in workflow
 
 
-def test_lint_pr_title_references_releez_ref_reusable_workflow():
-    """The lint-pr-title workflow pins the reusable workflow to releez_ref."""
+def test_lint_pr_title_references_devkit_ref_reusable_workflow():
+    """The lint-pr-title workflow pins the reusable workflow to devkit_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(releez_ref='releez-pin'),
+        ReleezProviderContext(devkit_ref='devkit-pin'),
     )
     workflow = bed.render(LINT_PR_TITLE_TEMPLATE)
-    assert '__releez_lint-pr-title.yaml@releez-pin' in workflow
+    assert '__releez_lint-pr-title.yaml@devkit-pin' in workflow
 
 
 def test_lint_pr_title_uses_self_action_when_enabled():
@@ -107,14 +107,14 @@ def test_lint_pr_title_uses_self_action_when_enabled():
     assert 'use-self-action: true' in workflow
 
 
-def test_validate_release_references_releez_ref_reusable_workflow():
-    """The validate-release workflow pins the reusable workflow to releez_ref."""
+def test_validate_release_references_devkit_ref_reusable_workflow():
+    """The validate-release workflow pins the reusable workflow to devkit_ref."""
     bed = ProviderTestBed(
         ReleezProvider,
-        ReleezProviderContext(releez_ref='releez-pin'),
+        ReleezProviderContext(devkit_ref='devkit-pin'),
     )
     workflow = bed.render(VALIDATE_RELEASE_TEMPLATE)
-    assert '__releez_validate-release.yaml@releez-pin' in workflow
+    assert '__releez_validate-release.yaml@devkit-pin' in workflow
 
 
 def test_validate_release_uses_published_action_by_default():

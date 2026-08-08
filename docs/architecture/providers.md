@@ -20,15 +20,13 @@ providers:
   workspace:
     cli: devkit-workspace-link
     context_overrides:
-      workspace_ref: <immutable-tag-or-sha>
+      devkit_ref: &devkit-ref <immutable-tag-or-sha>
   python:
     cli: devkit-python-link
-    context_overrides:
-      python_ref: <immutable-tag-or-sha>
   releez:
     cli: devkit-releez-link
     context_overrides:
-      releez_ref: <immutable-tag-or-sha>
+      devkit_ref: *devkit-ref
 
 providers_order: [workspace, python, releez]
 ```
@@ -76,12 +74,11 @@ Python dev tooling — ruff, ty, complexipy, pydoclint, pytest/coverage:
   `python:check:complexity`, `python:check:pydoclint`, `python:check:coverage`,
   and `python:uv-sync`, all referenced in place
 
-The Python provider owns `python_ref` and emits it through Repolish's typed
-provider-input exchange. The workspace provider receives that value when it
-composes the optional `python-checks` job; this keeps Python's package-specific
-ref out of workspace configuration. Other Python tooling has no per-repo
-template variables because `check-coverage`/`check-complexity` detect their
-targets at runtime (see
+The workspace provider uses the shared `devkit_ref` when it composes both the
+repository and optional Python reusable-workflow jobs. The Python provider needs
+no workflow ref or cross-provider input of its own. Other Python tooling has no
+per-repo template variables because `check-coverage`/`check-complexity` detect
+their targets at runtime (see
 [Mise Tasks](./mise-tasks.md#runtime-detection-over-render-time-templating)).
 
 ## `hotdogwerx-devkit-releez`
