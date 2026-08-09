@@ -11,7 +11,7 @@ providers:
       # master either — self-render against the branch actually being
       # worked on, or devkit's own rendered workflows reference reusable
       # workflows that don't exist yet at the ref they point to.
-      devkit_ref: &devkit-ref topic/repolish
+      devkit_ref: &devkit-ref master
       # Preserves the OS matrix the old codeguide/pkglink-based config
       # (ci_operating_systems) already ran before this migration.
       python_operating_systems: [ubuntu-latest, windows-latest]
