@@ -28,6 +28,16 @@ name = "releez"
 path = "packages/devkit-releez"
 tag-prefix = "releez-"
 
+[tool.releez.hooks]
+post-changelog = [
+  [
+    "mise",
+    "run",
+    "workspace:dprint:format",
+    "{changelog}",
+  ],
+]
+
 [dependency-groups]
 dev = [
   "pytest >= 9.0.2",
