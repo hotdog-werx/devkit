@@ -1,0 +1,44 @@
+name: repo-checks
+
+on:
+  workflow_call:
+    inputs:
+      enable-docs:
+        description: 'Whether to run the build-docs step'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup-uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: '**/pyproject.toml'
+      - name: mise
+        uses: jdx/mise-action@v3
+      - name: dependencies
+        run: mise run python:uv-sync
+      - name: check-dprint
+        if: always() && !cancelled()
+        run: mise run workspace:dprint:check
+      - name: check-actionlint
+        if: always() && !cancelled()
+        run: mise run workspace:actionlint:check
+      - name: check-repolish
+        if: always() && !cancelled()
+        run: mise run workspace:repolish:check
+      - name: check-uv-toolbox-lock
+        if: always() && !cancelled()
+        run: mise run workspace:uv-toolbox-lock:check
+      - name: build-docs
+        if: inputs.enable-docs && always() && !cancelled()
+        run: mise run workspace:docs:build

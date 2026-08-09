@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+"""Run ruff's linter and formatter in check-only mode."""
+
+import subprocess
+import sys
+
+
+def main() -> None:
+    for cmd in (('ruff', 'check', '.'), ('ruff', 'format', '--check', '.')):
+        result = subprocess.run(cmd, check=False)
+        if result.returncode != 0:
+            sys.exit(result.returncode)
+
+
+if __name__ == '__main__':
+    main()

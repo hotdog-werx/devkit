@@ -1,0 +1,5 @@
+[tool.pydoclint]
+style = "google"
+exclude = '\.venv|tests|site'
+check-return-types = true
+check-yield-types = true

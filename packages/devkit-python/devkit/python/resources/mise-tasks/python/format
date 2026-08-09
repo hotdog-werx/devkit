@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+#USAGE arg "[files]" var=#true default="." help="Files to format (defaults to the whole tree; lefthook passes staged files here)"
+"""Format Python files down to 80 cols where they fit.
+
+ruff's formatter adds a magic trailing comma to anything it explodes
+across lines, and skip-magic-trailing-comma=false means that comma then
+forces the construct to stay exploded even once the width limit widens
+back out to the real 119-col config on the second pass. ruff check --fix
+applies COM812 (add missing trailing commas) to anything the formatter
+didn't already touch.
+
+COM812 is ignored in ruff.toml itself (it conflicts with the formatter,
+which warns on every `ruff format` invocation if it's enabled there) and
+re-enabled only for this one fix-only pass via --extend-select.
+"""
+
+import os
+import subprocess
+import sys
+
+
+def run(*cmd: str) -> None:
+    result = subprocess.run(cmd, check=False)
+    if result.returncode != 0:
+        sys.exit(result.returncode)
+
+
+def main() -> None:
+    files = os.environ.get('usage_files', '.').split()
+    run('ruff', 'format', '--line-length=80', *files)
+    run('ruff', 'check', '--extend-select', 'COM812', '--fix', '--fix-only', *files)
+    run('ruff', 'format', *files)
+
+
+if __name__ == '__main__':
+    main()

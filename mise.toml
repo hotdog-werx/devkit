@@ -6,12 +6,85 @@ python.uv_venv_auto = true
 GITHUB_REPO_OWNER = "hotdog-werx"
 GITHUB_REPO_NAME = "{{ config_root | basename }}"
 GITHUB_REPO = "{{ env.GITHUB_REPO_OWNER }}/{{ env.GITHUB_REPO_NAME }}"
+GIT_CLIFF_CONFIG = "./cliff.toml"
+# devkit is a bare uv workspace container (package = false, no
+# [tool.uv.build-backend] module-name) — python:check:coverage's normal
+# auto-detection would fall back to the wrong target, so it's set
+# explicitly here instead.
+PYTEST_COV_TARGET = "devkit"
 
 [tools]
 uv = "0.11.26"
 dprint = "0.55.1"
 starship = "1.26.0"
 git-cliff = "2.13.1"
+actionlint = "1.7.11"
 shellcheck = "0.11.0"
-"pipx:uv-toolbox" = "0.1.0"
-"pipx:poethepoet" = "0.48.0"
+
+"pipx:git+https://github.com/hotdog-werx/uv-toolbox.git@chore/use-devkit" = "chore/use-devkit"
+"pipx:ruff" = "0.14.14"
+"pipx:ty" = "0.0.59"
+"pipx:complexipy" = "4.0.2"
+"pipx:pydoclint" = "0.9.1"
+"pipx:zensical" = "0.0.19"
+"pipx:releez" = "1.0.1"
+
+# repolish lives only in the uv-toolbox-managed "repolish" env (not devkit's
+# own .venv, not a mise-managed tool) — uv-toolbox install provisions it
+# before repolish link can use it. repolish link then materializes
+# provider-resource symlinks (.editorconfig, dprint.json) — these are never
+# committed to git (their symlink source is an absolute path, portable only
+# within the machine that created it), so every environment links them
+# fresh on every `mise install`.
+#
+# [[hooks.postinstall]] (array-of-tables, one entry per subprocess) is used
+# instead of a flat postinstall = ["...", "..."] array — newer mise releases
+# (2026.7.5 in CI, not 2026.5.15 locally) silently ran only the last entry
+# of the flat-array form.
+[[hooks.postinstall]]
+run = "uv-toolbox install"
+
+[[hooks.postinstall]]
+run = "uv-toolbox exec --env repolish -- repolish link"
+
+[[hooks.postinstall]]
+run = "mise run workspace:setup-hook"
+
+# devkit dogfoods its own providers locally (provider_root:, not installed
+# packages), so tasks are included straight from each package's resources/
+# instead of through the `.repolish/devkit-<name>/` symlink a real consumer
+# would use. "mise-tasks" (the default) is kept explicitly — task_config
+# includes *replaces* the default file-task dirs rather than adding to them.
+[task_config]
+includes = [
+  "mise-tasks",
+  "packages/devkit-workspace/devkit/workspace/resources/mise-tasks",
+  "packages/devkit-workspace/devkit/workspace/resources/mise-tasks.toml",
+  "packages/devkit-python/devkit/python/resources/mise-tasks",
+]
+
+[tasks.format]
+depends = ["python:format", "workspace:dprint:format"]
+
+[tasks.setup]
+depends = ["python:uv-sync", "workspace:pnpm-install"]
+run = "echo Ready!"
+
+[tasks.ci-checks]
+depends = [
+  "workspace:dprint:check",
+  "python:check:ruff",
+  "python:check:ty",
+  "python:check:complexity",
+  "python:check:pydoclint",
+  "python:check:coverage",
+  "workspace:actionlint:check",
+]
+
+[tasks.repo-checks]
+depends = [
+  "workspace:dprint:check",
+  "workspace:actionlint:check",
+  "workspace:repolish:check",
+  "workspace:uv-toolbox-lock:check",
+]

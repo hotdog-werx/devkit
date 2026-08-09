@@ -1,0 +1,37 @@
+name: releez-lint-pr-title
+
+on:
+  workflow_call:
+    inputs:
+      use-self-action:
+        description: 'Use the local ./ action instead of the published hotdog-werx/releez action — for releez to dogfood itself'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  lint-pr-title:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      # `uses:` can't reference an expression — it must be a static string —
+      # so selecting between the published action and the local self-action
+      # needs two mutually-exclusive steps instead of one dynamic uses:.
+      - name: Validate commit message (published action)
+        if: '!inputs.use-self-action'
+        uses: hotdog-werx/releez@v1
+        with:
+          mode: validate-commit
+          commit-message: ${{ github.event.pull_request.title }}
+
+      - name: Validate commit message (self action)
+        if: inputs.use-self-action
+        uses: ./
+        with:
+          mode: validate-commit
+          commit-message: ${{ github.event.pull_request.title }}

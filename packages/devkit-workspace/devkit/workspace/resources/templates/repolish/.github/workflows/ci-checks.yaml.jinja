@@ -1,0 +1,34 @@
+# {{ generated_header }}
+name: ci-checks
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+jobs:
+  repo-checks:
+    uses: hotdog-werx/devkit/.github/workflows/__workspace_repo-checks.yaml@{{ devkit_ref }}
+    with:
+      enable-docs: {{ enable_docs | lower }}
+{% if has_python %}
+  python-checks:
+    uses: hotdog-werx/devkit/.github/workflows/__python_python-checks.yaml@{{ devkit_ref }}
+    with:
+      operating-systems: '{{ python_operating_systems | tojson }}'
+      codecov: {{ python_codecov | lower }}
+    secrets:
+      CODECOV_TOKEN: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}
+{% endif %}
+## repolish-keep-block[custom-ci-checks]: start="## start-custom-ci-checks" end="## end-custom-ci-checks"
+  ## start-custom-ci-checks
+  ## Add custom jobs here (e.g. a tests/test-action pair). Content between
+  ## these two marker lines is preserved verbatim across repolish
+  ## re-applies — GitHub Actions `needs:` only works between jobs in the
+  ## same file, so jobs that must depend on repo-checks/python-checks
+  ## belong here rather than in a separate workflow file.
+  ##
+  ## Repolish matches these markers independent of indentation, allowing
+  ## YAML formatters to align them with the surrounding jobs safely.
+  ## end-custom-ci-checks

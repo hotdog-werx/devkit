@@ -1,0 +1,84 @@
+name: python-checks
+
+on:
+  workflow_call:
+    inputs:
+      operating-systems:
+        description: 'JSON array of operating systems to run pytest/coverage on (lint checks always run once, on ubuntu-latest only — they are OS-independent)'
+        required: false
+        type: string
+        default: '["ubuntu-latest"]'
+      codecov:
+        description: 'Whether to generate a coverage XML report and upload it to Codecov (requires the CODECOV_TOKEN secret, passed via secrets: inherit)'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup-uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: '**/pyproject.toml'
+      - name: mise
+        uses: jdx/mise-action@v3
+      - name: dependencies
+        run: mise run python:uv-sync
+      - name: check-python
+        if: always() && !cancelled()
+        run: mise run python:check:ruff
+      - name: check-ty
+        if: always() && !cancelled()
+        run: mise run python:check:ty
+      - name: check-complexity
+        if: always() && !cancelled()
+        run: mise run python:check:complexity
+      - name: check-pydoclint
+        if: always() && !cancelled()
+        continue-on-error: true
+        run: mise run python:check:pydoclint
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(inputs.operating-systems) }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup-uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: '**/pyproject.toml'
+      - name: mise
+        uses: jdx/mise-action@v3
+      - name: dependencies
+        run: mise run python:uv-sync
+      - name: check-coverage
+        run: mise run python:check:coverage
+      - name: generate-coverage-xml
+        if: inputs.codecov && always() && !cancelled()
+        run: uv run coverage xml -o coverage-${{ runner.os }}.xml
+      - name: upload-coverage-to-codecov
+        if: inputs.codecov && always() && !cancelled()
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage-${{ runner.os }}.xml
+          flags: ${{ runner.os }}
+          name: coverage-${{ runner.os }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true

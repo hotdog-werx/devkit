@@ -1,0 +1,46 @@
+lint.external = ["CCR", "DAR", "DOC", "WPS"]
+
+lint.select = ["ALL"]
+lint.ignore = [
+  "COM812", # Conflicts with the formatter; python:format applies it explicitly via --extend-select on the fix-only pass instead
+  "D100", # No docstrings for modules
+  "D104", # No docstrings for packages
+  "D107", # Allow __init__ to not have docstrings, conflicts with pydoclint
+  "FIX", # Allow TODOs which are checked by TD rules
+  "ISC001", # Allow implicit string concatenation. Sometimes it's just cleaner
+  "PLR2004", # Allow magic value comparison
+  "S607", # Allow subprocess calls to bare tool names (git, etc.) resolved via PATH
+  "SLF", # Ignore private member access, covered by ty
+]
+line-length = 119
+target-version = "py311"
+
+[format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[lint.flake8-annotations]
+allow-star-arg-any = true
+
+[lint.flake8-quotes]
+inline-quotes = "single"
+multiline-quotes = "double"
+
+[lint.isort]
+split-on-trailing-comma = true
+
+[lint.mccabe]
+max-complexity = 7
+
+# per-file-ignores isn't defined here on purpose: it's inherently
+# project-structure-specific (which paths hold tests, self-referential
+# provider quirks, etc.), and ruff's `extend` resolves relative globs
+# against *this* file's directory, not the consuming project's root — a
+# "**/tests/*.py" entry here would never match a real consumer's test
+# files. Each consumer declares its own [tool.ruff.per-file-ignores] in its
+# pyproject.toml instead. See
+# resources/templates/pyproject-fragments/python.toml for the common case.
+
+[lint.pydocstyle]
+convention = "google"

@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+"""Sync the project's Python dependencies, if it has any."""
+
+import subprocess
+import sys
+from pathlib import Path
+
+if __name__ == '__main__':
+    if not Path('pyproject.toml').exists():
+        print('skipping uv sync, no pyproject.toml found')
+        sys.exit(0)
+    # --all-packages is required for uv workspaces (devkit's own self-dogfood
+    # is one) to actually install the workspace member packages as editable
+    # installs — without it, e.g. `devkit.workspace`/`devkit.python` end up
+    # unimportable even though `uv sync` "succeeds". It's a no-op for
+    # single-project repos with no [tool.uv.workspace] members.
+    cmd = ('uv', 'sync', '--all-groups', '--all-packages')
+    sys.exit(subprocess.run(cmd, check=False).returncode)
