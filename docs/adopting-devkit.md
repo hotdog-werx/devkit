@@ -28,8 +28,8 @@ environments:
 ```
 
 Install every selected provider and reference every reusable workflow from one
-immutable Devkit Git snapshot. The three Releez projects retain independent
-versions, changelogs, and release tags; Devkit does not publish them to PyPI.
+immutable Devkit Git snapshot. Devkit releases and versions the three provider
+packages together under one repository tag; it does not publish them to PyPI.
 
 After editing `uv-toolbox.yaml`, regenerate and verify the lockfile:
 

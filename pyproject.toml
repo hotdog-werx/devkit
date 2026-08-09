@@ -15,21 +15,7 @@ members = ["packages/*"]
 
 [tool.releez]
 create-pr = true
-
-[[tool.releez.projects]]
-name = "workspace"
-path = "packages/devkit-workspace"
-tag-prefix = "workspace-"
-
-[[tool.releez.projects]]
-name = "python"
-path = "packages/devkit-python"
-tag-prefix = "python-"
-
-[[tool.releez.projects]]
-name = "releez"
-path = "packages/devkit-releez"
-tag-prefix = "releez-"
+changelog-path = "CHANGELOG.md"
 
 [tool.releez.hooks]
 post-changelog = [

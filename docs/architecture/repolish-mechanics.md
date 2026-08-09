@@ -40,7 +40,7 @@ within one file, so a job depending on `repo-checks`/ `python-checks` can't live
 in a separate workflow file) — use a keep directive instead:
 
 ```
-## repolish-keep-block[custom-ci-checks]: start="  ## start-custom-ci-checks" end="  ## end-custom-ci-checks"
+## repolish-keep-block[custom-ci-checks]: start="## start-custom-ci-checks" end="## end-custom-ci-checks"
   ## start-custom-ci-checks
   ## default placeholder text, only used if no local match is found
   ## end-custom-ci-checks
