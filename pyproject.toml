@@ -16,6 +16,7 @@ members = ["packages/*"]
 [tool.releez]
 create-pr = true
 changelog-path = "CHANGELOG.md"
+alias-versions = "major"
 
 [tool.releez.hooks]
 post-changelog = [
