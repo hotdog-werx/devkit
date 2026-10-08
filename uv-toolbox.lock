@@ -1,6 +1,7 @@
 version: 1
 environments:
   tools:
+    fingerprint: sha256:8225c2c1816ab22ebe2a7571a4424bb29fe8e36d4f5b2da4d6f25d2c1c1d090a
     requirements: |
       annotated-doc==0.0.5 \
           --hash=sha256:117bac03a25ede5df5440e855b32d556049ca169ead221505badf432fed4b101 \
@@ -866,6 +867,7 @@ environments:
           --hash=sha256:97ed2b21aba5f788fc39d1597d00938d602b4d2724ed599a1dab7548fe4f0025 \
           --hash=sha256:cdc2d84f38da809a28402eda5f2b6dbb150e14427f296c5b521e0dfc6a2e8a39
   repolish:
+    fingerprint: sha256:14c266497cfcccffa816c70066c1cfc6836ab5cdccc4d004c84852aed69887b5
     requirements: |
       -e ./packages/devkit-python
       -e ./packages/devkit-releez

@@ -1,3 +1,10 @@
+## [0.1.1] - 2026-10-08
+
+### 🐛 Bug Fixes
+
+- Python checks don't suppress pydoclint failure by
+  [@jamestrousdale](https://github.com/jamestrousdale)
+
 ## [0.1.0] - 2026-08-09
 
 ### 🚀 Features
