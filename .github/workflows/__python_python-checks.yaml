@@ -46,7 +46,6 @@ jobs:
         run: mise run python:check:complexity
       - name: check-pydoclint
         if: always() && !cancelled()
-        continue-on-error: true
         run: mise run python:check:pydoclint
 
   test:
