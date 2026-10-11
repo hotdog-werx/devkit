@@ -1,3 +1,10 @@
+## [0.1.2] - 2026-10-11
+
+### 🐛 Bug Fixes
+
+- Fix pydoclint cfg (#9) by [@jamestrousdale](https://github.com/jamestrousdale)
+  in [#9](https://github.com/hotdog-werx/devkit/pull/9)
+
 ## [0.1.1] - 2026-10-08
 
 ### 🐛 Bug Fixes
