@@ -38,12 +38,10 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
         """Build the destination -> template source mappings.
 
         Args:
-            context (PythonProviderContext): Unused, kept for hook signature
-                consistency.
+            context: Unused, kept for hook signature consistency.
 
         Returns:
-            dict[str, str | TemplateMapping | None]: Empty — every file this
-            provider ships (ruff.toml, pydoclint.toml, and the mise tasks
+            Empty — every file this provider ships (ruff.toml, pydoclint.toml, and the mise tasks
             under resources/mise-tasks/) is fully static (no per-repo
             templating), so nothing needs rendering as a physical copy.
             They're referenced directly from `.repolish/hotdogwerx-devkit-python/`

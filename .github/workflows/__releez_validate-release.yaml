@@ -19,7 +19,7 @@ jobs:
     if: startsWith(github.head_ref, 'release/')
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -29,7 +29,7 @@ jobs:
       # needs two mutually-exclusive steps instead of one dynamic uses:.
       - name: Validate release (published action)
         if: '!inputs.use-self-action'
-        uses: hotdog-werx/releez@v1
+        uses: hotdog-werx/releez@49bd9a49292ab210d26cfd0cb2485890bd1a4df5 # v1
         with:
           mode: validate
           post-comment: 'true'

@@ -1,5 +1,7 @@
 [tool.pydoclint]
 style = "google"
 exclude = '\.venv|tests|site'
-check-return-types = true
-check-yield-types = true
+# Types live in signatures; docstrings only describe args, returns and yields.
+arg-type-hints-in-docstring = false
+check-return-types = false
+check-yield-types = false
