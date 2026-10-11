@@ -24,9 +24,8 @@ inputs:
 Split into two jobs:
 
 - **`lint`** — `check-python` (ruff check + format check), `check-ty`,
-  `check-complexity`, `check-pydoclint` (the last is `continue-on-error: true`,
-  since pydoclint's arg-type-hint checks are stricter than most codebases
-  currently satisfy). Always runs once on `ubuntu-latest` — lint checks are
+  `check-complexity`, `check-pydoclint` (types are checked in signatures, not
+  docstrings). Always runs once on `ubuntu-latest` — lint checks are
   OS-independent, so matrixing them would just waste CI minutes.
 - **`test`** — `check-coverage`, matrixed across `operating-systems`, with an
   optional Codecov upload.
@@ -84,7 +83,7 @@ This is worked around with two mutually-exclusive steps, each with a static
 ```yaml
 - name: Releez finalize (published action)
   if: '!inputs.use-self-action'
-  uses: hotdog-werx/releez@v1
+  uses: hotdog-werx/releez@49bd9a49292ab210d26cfd0cb2485890bd1a4df5 # v1
   with:
     mode: finalize
 
