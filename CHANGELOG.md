@@ -1,3 +1,11 @@
+## [0.1.3] - 2026-10-12
+
+### 🐛 Bug Fixes
+
+- Bump releez to 1.1.1 (#11) by
+  [@jamestrousdale](https://github.com/jamestrousdale) in
+  [#11](https://github.com/hotdog-werx/devkit/pull/11)
+
 ## [0.1.2] - 2026-10-11
 
 ### 🐛 Bug Fixes
