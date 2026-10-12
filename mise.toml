@@ -27,7 +27,7 @@ shellcheck = "0.11.0"
 "pipx:complexipy" = "4.0.2"
 "pipx:pydoclint" = "0.9.1"
 "pipx:zensical" = "0.0.19"
-"pipx:releez" = "1.0.1"
+"pipx:releez" = "1.1.1"
 
 # repolish lives only in the uv-toolbox-managed "repolish" env (not devkit's
 # own .venv, not a mise-managed tool) — uv-toolbox install provisions it
