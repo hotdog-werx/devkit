@@ -83,7 +83,7 @@ This is worked around with two mutually-exclusive steps, each with a static
 ```yaml
 - name: Releez finalize (published action)
   if: '!inputs.use-self-action'
-  uses: hotdog-werx/releez@49bd9a49292ab210d26cfd0cb2485890bd1a4df5 # v1
+  uses: hotdog-werx/releez@db0a71d48b9c39f6d7dc415d01f0b6ad21a7ecce # 1.1.1
   with:
     mode: finalize
 

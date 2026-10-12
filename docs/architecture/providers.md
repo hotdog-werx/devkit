@@ -50,9 +50,10 @@ Repo-agnostic concerns any repo benefits from, regardless of language:
 - `deploy-docs.yaml` — thin wrapper calling `__workspace_deploy-docs.yaml`,
   rendered only when `enable_docs` is true
 - mise tasks: `workspace:dprint:format`, `workspace:dprint:check`,
-  `workspace:actionlint:check`, `workspace:repolish:check`,
-  `workspace:repolish:link`, `workspace:uv-toolbox-lock:check`,
-  `workspace:docs:dev`, `workspace:docs:build`, `workspace:docs:clean`, plus the
+  `workspace:actionlint:check`, `workspace:repolish:apply`,
+  `workspace:repolish:check`, `workspace:repolish:link`,
+  `workspace:uv-toolbox-lock:check`, `workspace:docs:dev`,
+  `workspace:docs:build`, `workspace:docs:clean`, plus the
   `workspace:setup-hook`/`workspace:pnpm-install` file-tasks
 
 Context detection: `has_python` comes from the loaded provider set and

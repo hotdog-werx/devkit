@@ -10,6 +10,9 @@ run = "dprint check"
 ["workspace:actionlint:check"]
 run = "actionlint"
 
+["workspace:repolish:apply"]
+run = "uv-toolbox exec --env repolish -- repolish apply"
+
 ["workspace:repolish:check"]
 run = "uv-toolbox exec --env repolish -- repolish apply --check"
 
