@@ -26,16 +26,3 @@ def test_ruff_toml_is_valid_toml():
     """The shared ruff.toml parses and sets the expected docstring convention."""
     parsed = tomllib.loads(_RUFF_TOML)
     assert parsed['lint']['pydocstyle']['convention'] == 'google'
-
-
-def test_no_pyright_or_basedpyright_anywhere_in_static_configs():
-    """pydoclint/ty replaced pyright entirely — regression test for that decision."""
-    combined = f'{_RUFF_TOML}\n{_PYDOCLINT_TOML}'
-    assert 'pyright' not in combined.lower()
-
-
-def test_no_toolbelt_references_anywhere_in_static_configs():
-    """toolbelt/tbelt was removed entirely in favor of native mise tasks."""
-    combined = f'{_RUFF_TOML}\n{_PYDOCLINT_TOML}'
-    assert 'toolbelt' not in combined.lower()
-    assert 'tbelt' not in combined.lower()

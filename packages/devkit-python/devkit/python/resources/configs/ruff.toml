@@ -2,16 +2,16 @@ lint.external = ["CCR", "DAR", "DOC", "WPS"]
 
 lint.select = ["ALL"]
 lint.ignore = [
-  "COM812",  # Conflicts with the formatter; python:format applies it explicitly via --extend-select on the fix-only pass instead
-  "D100",    # No docstrings for modules
-  "D104",    # No docstrings for packages
-  "D107",    # Allow __init__ to not have docstrings, conflicts with pydoclint
-  "FIX",     # Allow TODOs which are checked by TD rules
-  "ISC001",  # Allow implicit string concatenation. Sometimes it's just cleaner
+  "COM812", # Conflicts with the formatter; python:format applies it explicitly via --extend-select on the fix-only pass instead
+  "D100", # No docstrings for modules
+  "D104", # No docstrings for packages
+  "D107", # Allow __init__ to not have docstrings, conflicts with pydoclint
+  "FIX", # Allow TODOs which are checked by TD rules
+  "ISC001", # Allow implicit string concatenation. Sometimes it's just cleaner
   "PLR2004", # Allow magic value comparison
-  "S607",    # Allow subprocess calls to bare tool names (git, etc.) resolved via PATH
-  "SLF",     # Ignore private member access, covered by ty
-  "CPY001",  # Ignore copyrights
+  "S607", # Allow subprocess calls to bare tool names (git, etc.) resolved via PATH
+  "SLF", # Ignore private member access, covered by ty
+  "CPY001", # Ignore copyrights
 ]
 # Require an explicit encoding for file I/O (PLW1514): the platform default is
 # cp1252 on Windows, which garbles UTF-8 configs, templates and lockfiles. It's

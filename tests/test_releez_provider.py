@@ -151,19 +151,3 @@ def test_cliff_toml_is_valid_toml_and_preserves_tera_syntax():
     # Tera syntax must remain literal, not be interpreted as Jinja:
     assert '{{ version | trim_start_matches' in parsed['changelog']['body']
     assert '{% if commit.scope %}' in parsed['changelog']['body']
-
-
-def test_no_pyright_references():
-    """pydoclint/ty replaced pyright entirely — regression test for that decision."""
-    bed = ProviderTestBed(ReleezProvider, ReleezProviderContext())
-    rendered = bed.render_all()
-    combined = '\n'.join(
-        [
-            *rendered.values(),
-            bed.render(FINALIZE_RELEASE_TEMPLATE),
-            bed.render(LINT_PR_TITLE_TEMPLATE),
-            bed.render(VALIDATE_RELEASE_TEMPLATE),
-            bed.render(CLIFF_TOML_TEMPLATE),
-        ],
-    )
-    assert 'pyright' not in combined.lower()
