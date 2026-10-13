@@ -161,7 +161,7 @@ class KeepBlockTemplate:
             The rendered file.
         """
         templates = Path(self.package.__file__ or '').parent / 'resources' / 'templates' / 'repolish'
-        template = (templates / self.template_name).read_text()
+        template = (templates / self.template_name).read_text(encoding='utf-8')
         substituted = apply_keep_replacements(template, self.keep_spec, {}, {}, local_content)
         env = Environment(undefined=StrictUndefined, keep_trailing_newline=True)
         return env.from_string(substituted).render(**ctx_to_dict(self.test_bed().resolved_context))

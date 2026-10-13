@@ -6,8 +6,8 @@ from devkit.python.repolish.provider import PythonProvider
 from repolish.testing import ProviderTestBed
 
 _RESOURCES = Path(__file__).parents[1] / 'packages/devkit-python/devkit/python/resources'
-_RUFF_TOML = (_RESOURCES / 'configs/ruff.toml').read_text()
-_PYDOCLINT_TOML = (_RESOURCES / 'configs/pydoclint.toml').read_text()
+_RUFF_TOML = (_RESOURCES / 'configs/ruff.toml').read_text(encoding='utf-8')
+_PYDOCLINT_TOML = (_RESOURCES / 'configs/pydoclint.toml').read_text(encoding='utf-8')
 
 
 def test_render_all_is_empty():
