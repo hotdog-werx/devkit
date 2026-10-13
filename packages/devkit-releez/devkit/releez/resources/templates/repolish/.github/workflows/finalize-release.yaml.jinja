@@ -20,8 +20,9 @@ jobs:
       publish-command: {{ publish_command }}
     secrets:
       PYPI_PUBLISH_TOKEN: {% raw %}${{ secrets.PYPI_PUBLISH_TOKEN }}{% endraw %}
-
+{% raw %}
 ## repolish-keep-block[additional-jobs]: start="## start-additional-jobs" end="## end-additional-jobs"
   ## start-additional-jobs
   ## post-release jobs — add your custom jobs here
   ## end-additional-jobs
+{%- endraw %}
