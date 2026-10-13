@@ -1,3 +1,14 @@
+## [0.1.4] - 2026-10-13
+
+### 🐛 Bug Fixes
+
+- Add raw blocks to template workflows (#13) by
+  [@jamestrousdale](https://github.com/jamestrousdale) in
+  [#13](https://github.com/hotdog-werx/devkit/pull/13)
+
+- DIsable CPY001 in ruff cfg by
+  [@jamestrousdale](https://github.com/jamestrousdale)
+
 ## [0.1.3] - 2026-10-12
 
 ### 🐛 Bug Fixes
