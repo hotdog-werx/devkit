@@ -1,11 +1,18 @@
 """Regression tests for Repolish keep-block preprocessing."""
 
+from dataclasses import dataclass
+from pathlib import Path
+from types import ModuleType
+
+import devkit.releez
+import devkit.workspace
 import pytest
 from devkit.releez.repolish.models import ReleezProviderContext
 from devkit.releez.repolish.provider import ReleezProvider
 from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
 from jinja2 import Environment, StrictUndefined
+from repolish.misc import ctx_to_dict
 from repolish.preprocessors.keep import KeepBlockSpec, apply_keep_replacements
 from repolish.testing import ProviderTestBed
 
@@ -113,42 +120,119 @@ def test_additional_job_keep_blocks_preserve_consumer_jobs(
     assert f'repolish-keep-block[{tag}]' not in result
 
 
-def test_keep_block_content_with_github_actions_expressions_survives_raw_wrapping():
-    """A ${{ }} expression injected via a keep-block must not be swallowed by Jinja.
+@dataclass(frozen=True)
+class KeepBlockTemplate:
+    """A workflow template with a keep-block for consumer-owned jobs."""
 
-    This mirrors releez's real ci-checks.yaml, where the custom-ci-checks
-    keep-block's local content contains {% raw %}-wrapped ${{ matrix.os }}
-    etc. Keep-block substitution runs before Jinja, so the injected local
-    content is re-processed by Jinja along with the rest of the file — if
-    it isn't wrapped, rendering fails with an "undefined" error.
-    """
-    bed = ProviderTestBed(
+    provider_type: type[WorkspaceProvider] | type[ReleezProvider]
+    context: WorkspaceProviderContext | ReleezProviderContext
+    package: ModuleType
+    template_name: str
+    tag: str
+
+    @property
+    def keep_spec(self) -> dict[str, KeepBlockSpec]:
+        """The keep-block spec, as the CLI builds it from the directive.
+
+        Returns:
+            The spec keyed by the keep-block tag.
+        """
+        return {self.tag: KeepBlockSpec(start=f'## start-{self.tag}', end=f'## end-{self.tag}')}
+
+    def test_bed(self) -> ProviderTestBed:
+        """A test bed for the template's provider.
+
+        Returns:
+            A ProviderTestBed for the provider and context.
+        """
+        return ProviderTestBed(self.provider_type, self.context)
+
+    def render_like_cli(self, local_content: str) -> str:
+        """Render in the real CLI order: keep-block substitution, then Jinja.
+
+        ProviderTestBed renders Jinja first, which would hide the bug this
+        guards against: in the real pipeline the consumer's preserved jobs
+        become part of the template source before Jinja runs.
+
+        Args:
+            local_content: The consumer's existing file content.
+
+        Returns:
+            The rendered file.
+        """
+        templates = Path(self.package.__file__ or '').parent / 'resources' / 'templates' / 'repolish'
+        template = (templates / self.template_name).read_text(encoding='utf-8')
+        substituted = apply_keep_replacements(template, self.keep_spec, {}, {}, local_content)
+        env = Environment(undefined=StrictUndefined, keep_trailing_newline=True)
+        return env.from_string(substituted).render(**ctx_to_dict(self.test_bed().resolved_context))
+
+
+_KEEP_BLOCK_TEMPLATES = [
+    KeepBlockTemplate(
         WorkspaceProvider,
         WorkspaceProviderContext(has_python=True),
-    )
-    content = bed.render('.github/workflows/ci-checks.yaml.jinja')
+        devkit.workspace,
+        '.github/workflows/ci-checks.yaml.jinja',
+        'custom-ci-checks',
+    ),
+    KeepBlockTemplate(
+        WorkspaceProvider,
+        WorkspaceProviderContext(enable_docs=True),
+        devkit.workspace,
+        '.github/workflows/deploy-docs.yaml.jinja',
+        'additional-deploy-jobs',
+    ),
+    *(
+        KeepBlockTemplate(
+            ReleezProvider,
+            ReleezProviderContext(),
+            devkit.releez,
+            f'.github/workflows/{name}.yaml.jinja',
+            tag,
+        )
+        for name, tag in [
+            ('finalize-release', 'additional-jobs'),
+            ('lint-pr-title', 'additional-lint-pr-title-jobs'),
+            ('validate-release', 'additional-validate-release-jobs'),
+        ]
+    ),
+]
 
-    local_content = (
-        f'  {_START_MARKER}\n  tests:\n    runs-on: {{% raw %}}${{{{ matrix.os }}}}{{% endraw %}}\n  {_END_MARKER}\n'
-    )
-    substituted = apply_keep_replacements(
-        content,
-        {
-            'custom-ci-checks': KeepBlockSpec(
-                start=_START_MARKER,
-                end=_END_MARKER,
-            ),
-        },
-        {},
-        {},
-        local_content,
+
+def _template_id(template: KeepBlockTemplate) -> str:
+    return Path(template.template_name).name.removesuffix('.yaml.jinja')
+
+
+@pytest.mark.parametrize('template', _KEEP_BLOCK_TEMPLATES, ids=_template_id)
+def test_keep_block_content_with_github_actions_expressions_is_preserved_verbatim(
+    template: KeepBlockTemplate,
+) -> None:
+    """Consumer jobs using ${{ }} expressions survive without any escaping.
+
+    Without the template's raw wrapping, Jinja reads ``${{ matrix.uv }}`` as
+    ``$`` plus a Jinja expression and fails with "'matrix' is undefined".
+    """
+    custom_jobs = (
+        f'  ## start-{template.tag}\n'
+        '  uv-compatibility:\n'
+        '    name: uv ${{ matrix.uv }}\n'
+        '    strategy:\n'
+        "      matrix:\n        uv: ['0.8.24', '0.12.24']\n"
+        f'  ## end-{template.tag}\n'
     )
 
-    # Re-render the substituted content through Jinja exactly as the real
-    # apply pipeline does — this is the step that previously blew up with
-    # "'matrix' is undefined" when the ${{ }} wasn't raw-wrapped.
-    env = Environment(undefined=StrictUndefined, keep_trailing_newline=True)
-    final = env.from_string(substituted).render(
-        secrets={'CODECOV_TOKEN': '${{ secrets.CODECOV_TOKEN }}'},
-    )
-    assert '${{ matrix.os }}' in final
+    rendered = template.render_like_cli(custom_jobs)
+
+    assert rendered.endswith(custom_jobs)
+    assert 'raw %}' not in rendered
+
+
+@pytest.mark.parametrize('template', _KEEP_BLOCK_TEMPLATES, ids=_template_id)
+def test_raw_wrapping_leaves_default_output_unchanged(template: KeepBlockTemplate) -> None:
+    """With no local content, the output matches the Jinja-first render of the template default."""
+    rendered = template.render_like_cli('')
+    default = template.test_bed().render(template.template_name)
+
+    assert rendered == apply_keep_replacements(default, template.keep_spec, {}, {}, '')
+    assert rendered.endswith(f'  ## end-{template.tag}\n')
+    assert 'raw %}' not in rendered

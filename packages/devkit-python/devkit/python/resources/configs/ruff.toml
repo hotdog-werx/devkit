@@ -12,6 +12,14 @@ lint.ignore = [
   "S607", # Allow subprocess calls to bare tool names (git, etc.) resolved via PATH
   "SLF", # Ignore private member access, covered by ty
 ]
+# Require an explicit encoding for file I/O (PLW1514): the platform default is
+# cp1252 on Windows, which garbles UTF-8 configs, templates and lockfiles. It's
+# a preview rule; explicit-preview-rules opts in only to preview rules named
+# here, so `select = ["ALL"]` doesn't pull in every other preview rule too.
+lint.preview = true
+lint.explicit-preview-rules = true
+lint.extend-select = ["PLW1514"]
+
 line-length = 119
 target-version = "py311"
 

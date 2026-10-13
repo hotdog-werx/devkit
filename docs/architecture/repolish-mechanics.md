@@ -52,6 +52,19 @@ verbatim — falling back to the template's own default only when no local match
 exists. `keep-block` uses a start+end marker pair; `keep-rest` uses a single
 marker and preserves everything from that line to end-of-file.
 
+### Keep-blocks and Jinja
+
+Keep-block substitution runs on the template source **before** Jinja renders it,
+so the consumer's preserved content is rendered as Jinja too. Workflow
+keep-blocks must therefore be wrapped in `{% raw %}` in the template, or a
+consumer job using a GitHub expression such as `${{ matrix.os }}` fails with
+`'matrix' is undefined`. Consumers can't escape it themselves: the file on disk
+would keep the escape while the rendered output wouldn't, so
+`repolish apply --check` would always report drift. `ci-checks.yaml.jinja` shows
+the pattern. The `{% raw %}` tag goes at the end of the line before the
+directive, and `{%- endraw %}` on its own line after the end marker, because
+directives and markers must start their own lines.
+
 ### The dprint-indentation gotcha
 
 Repolish's marker matching is an **exact string match with no whitespace

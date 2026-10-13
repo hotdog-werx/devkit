@@ -47,4 +47,7 @@ def test_managed_workflow_templates_share_generated_header() -> None:
     )
 
     assert len(workflow_templates) == 5
-    assert all(template.read_text().splitlines()[0] == '# {{ generated_header }}' for template in workflow_templates)
+    assert all(
+        template.read_text(encoding='utf-8').splitlines()[0] == '# {{ generated_header }}'
+        for template in workflow_templates
+    )

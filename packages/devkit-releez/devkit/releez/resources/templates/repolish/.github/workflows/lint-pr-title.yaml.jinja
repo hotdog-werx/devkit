@@ -19,8 +19,9 @@ jobs:
     uses: hotdog-werx/devkit/.github/workflows/__releez_lint-pr-title.yaml@{{ devkit_ref }}
     with:
       use-self-action: {{ use_self_action | lower }}
-
+{% raw %}
 ## repolish-keep-block[additional-lint-pr-title-jobs]: start="## start-additional-lint-pr-title-jobs" end="## end-additional-lint-pr-title-jobs"
   ## start-additional-lint-pr-title-jobs
   ## post-lint-pr-title jobs — add your custom jobs here
   ## end-additional-lint-pr-title-jobs
+{%- endraw %}
