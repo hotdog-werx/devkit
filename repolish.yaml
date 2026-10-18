@@ -1,11 +1,8 @@
+module_links: true
+
 providers:
   workspace:
-    provider_root: ./packages/devkit-workspace/devkit/workspace/resources/templates
-    # resources_dir defaults to provider_root when omitted — but the
-    # workspace provider's symlinks (configs/.editorconfig, configs/dprint.json)
-    # live in resources/configs/, a sibling of resources/templates/, not
-    # under it. Point resources_dir at the parent so symlink sources resolve.
-    resources_dir: ./packages/devkit-workspace/devkit/workspace/resources
+    module: devkit.workspace
     context_overrides:
       # devkit hasn't cut a tagged release yet, and this content isn't on
       # master either — self-render against the branch actually being
@@ -16,9 +13,9 @@ providers:
       # (ci_operating_systems) already ran before this migration.
       python_operating_systems: [ubuntu-latest, windows-latest]
   python:
-    provider_root: ./packages/devkit-python/devkit/python/resources/templates
+    module: devkit.python
   releez:
-    provider_root: ./packages/devkit-releez/devkit/releez/resources/templates
+    module: devkit.releez
     context_overrides:
       devkit_ref: *devkit-ref
       # Devkit releases/tags its three Releez projects independently, but the

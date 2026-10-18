@@ -50,11 +50,13 @@ run = "uv-toolbox exec --env repolish -- repolish link"
 [[hooks.postinstall]]
 run = "mise run workspace:setup-hook"
 
-# devkit dogfoods its own providers locally (provider_root:, not installed
-# packages), so tasks are included straight from each package's resources/
-# instead of through the `.repolish/devkit-<name>/` symlink a real consumer
-# would use. "mise-tasks" (the default) is kept explicitly — task_config
-# includes *replaces* the default file-task dirs rather than adding to them.
+# mise loads task_config includes when its config loads — on a fresh
+# clone that happens before the postinstall hooks have run `repolish
+# link`, so task files are included straight from each package's
+# resources/ instead of through the `.repolish/devkit-<name>/` symlink
+# a real consumer would use. "mise-tasks" (the default) is kept
+# explicitly — task_config includes *replaces* the default file-task
+# dirs rather than adding to them.
 [task_config]
 includes = [
   "mise-tasks",

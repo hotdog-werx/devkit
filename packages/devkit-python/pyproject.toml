@@ -14,7 +14,7 @@ classifiers = [
 dependencies = [
   # GitignoreInputs lives on the workspace provider; importing it is how a
   # sender targets the workspace gitignore facet (exact-schema routing).
-  "devkit-workspace",
+  "hotdogwerx-devkit-workspace",
   "repolish >=1.6.2, <2",
 ]
 
@@ -31,7 +31,7 @@ requires = ["uv_build>=0.11,<0.12"]
 build-backend = "uv_build"
 
 [tool.uv.sources]
-devkit-workspace = { workspace = true }
+hotdogwerx-devkit-workspace = { workspace = true }
 
 [tool.uv.build-backend]
 module-name = "devkit.python"

@@ -42,15 +42,17 @@ uv-toolbox install
 ## 2. Add `repolish.yaml`
 
 ```yaml
+module_links: true
+
 providers:
   workspace:
-    cli: devkit-workspace-link
+    module: devkit.workspace
     context_overrides:
       devkit_ref: &devkit-ref <immutable-tag-or-sha>
   python:
-    cli: devkit-python-link
+    module: devkit.python
   releez:
-    cli: devkit-releez-link
+    module: devkit.releez
     context_overrides:
       devkit_ref: *devkit-ref
 
@@ -91,9 +93,9 @@ going forward.
 
 `repolish link` (not `repolish apply`) is what belongs in a postinstall hook —
 it only materializes the whole-resources-directory symlinks
-(`.repolish/hotdogwerx-devkit-<name>/`, used by every referenced-in-place mise
-task) and the static config symlinks (`.editorconfig`, `dprint.json`). It's safe
-to run on every `mise install` without review. `repolish apply` actually
+(`.repolish/devkit-<name>/`, used by every referenced-in-place mise task) and
+the static config symlinks (`.editorconfig`, `dprint.json`). It's safe to run on
+every `mise install` without review. `repolish apply` actually
 writes/regenerates tracked files and should stay a manual, reviewed operation
 (`mise run workspace:repolish:check`/an explicit `repolish
 apply`), not
@@ -107,7 +109,7 @@ includes = [
   "mise-tasks",
   ".repolish/devkit-workspace/mise-tasks",
   ".repolish/devkit-workspace/mise-tasks.toml",
-  ".repolish/hotdogwerx-devkit-python/mise-tasks",
+  ".repolish/devkit-python/mise-tasks",
 ]
 ```
 

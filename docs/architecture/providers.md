@@ -1,6 +1,6 @@
 # Providers
 
-Each devkit package (`devkit-workspace`, `hotdogwerx-devkit-python`,
+Each devkit package (`hotdogwerx-devkit-workspace`, `hotdogwerx-devkit-python`,
 `hotdogwerx-devkit-releez`) implements a `repolish.Provider` subclass. A
 provider has three jobs:
 
@@ -16,29 +16,32 @@ provider has three jobs:
 A consumer's `repolish.yaml` lists which providers to use and in what order:
 
 ```yaml
+module_links: true
+
 providers:
   workspace:
-    cli: devkit-workspace-link
+    module: devkit.workspace
     context_overrides:
       devkit_ref: &devkit-ref <immutable-tag-or-sha>
   python:
-    cli: devkit-python-link
+    module: devkit.python
   releez:
-    cli: devkit-releez-link
+    module: devkit.releez
     context_overrides:
       devkit_ref: *devkit-ref
 
 providers_order: [workspace, python, releez]
 ```
 
-`cli: devkit-<name>-link` tells repolish to resolve the provider from an
-installed package's console-script entry point (see
-[Adopting Devkit](../adopting-devkit.md) for how that package actually gets
-installed). Devkit's own repo dogfoods its providers differently — via
-`provider_root: ./packages/devkit-<name>/...` pointing directly at the package
-source, since there's nothing to "install" when you _are_ the provider.
+`module: devkit.<name>` tells repolish to resolve the provider from an installed
+package's module (see [Adopting Devkit](../adopting-devkit.md) for how that
+package actually gets installed); `module_links: true` links each one under its
+module name (`.repolish/devkit-<name>/`) instead of the org-prefixed
+distribution name. Devkit's own repo dogfoods the same `module:` form — the
+packages are installed editable into the repolish environment, so linking
+resolves straight back to the package sources in this monorepo.
 
-## `devkit-workspace`
+## `hotdogwerx-devkit-workspace`
 
 Repo-agnostic concerns any repo benefits from, regardless of language:
 
