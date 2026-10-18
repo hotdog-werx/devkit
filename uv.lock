@@ -162,7 +162,7 @@ dev = [
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-cov", specifier = ">=6.2.1" },
     { name = "pytest-mock", specifier = ">=3.14.1" },
-    { name = "repolish", editable = "/home/jmlopez/Work/repolish" },
+    { name = "repolish", git = "https://github.com/hotdog-werx/repolish?rev=topic%2Ffacets-recreate" },
     { name = "ty", specifier = ">=0.0.16" },
 ]
 
@@ -187,7 +187,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "hotdogwerx-devkit-workspace", editable = "packages/devkit-workspace" },
-    { name = "repolish", editable = "/home/jmlopez/Work/repolish" },
+    { name = "repolish", specifier = ">=1.6.2,<2" },
 ]
 
 [[package]]
@@ -199,7 +199,7 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "repolish", editable = "/home/jmlopez/Work/repolish" }]
+requires-dist = [{ name = "repolish", specifier = ">=1.6.2,<2" }]
 
 [[package]]
 name = "hotdogwerx-devkit-workspace"
@@ -216,7 +216,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "repolish", editable = "/home/jmlopez/Work/repolish" }]
+requires-dist = [{ name = "repolish", specifier = ">=1.6.2,<2" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -597,31 +597,14 @@ wheels = [
 
 [[package]]
 name = "repolish"
-source = { editable = "/home/jmlopez/Work/repolish" }
+version = "1.16.0"
+source = { git = "https://github.com/hotdog-werx/repolish?rev=topic%2Ffacets-recreate#c0b80c57904ccbc2cb9586e006c1576506c6971f" }
 dependencies = [
     { name = "cyclopts" },
     { name = "hotlog" },
     { name = "jinja2" },
     { name = "pydantic" },
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "cyclopts", specifier = ">=4.8.0" },
-    { name = "hotlog", specifier = ">=0.2.0" },
-    { name = "jinja2", specifier = "==3.1.6" },
-    { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "typing-extensions", marker = "python_full_version < '3.12'", specifier = ">=4.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "filelock", specifier = ">=3.32.3" },
-    { name = "pytest", specifier = ">=8.0.0" },
-    { name = "pytest-cov", specifier = ">=4.0.0" },
-    { name = "pytest-mock", specifier = ">=3.12.0" },
-    { name = "pytest-xdist", specifier = ">=3.8.0" },
 ]
 
 [[package]]

@@ -13,10 +13,16 @@ package = false
 [tool.uv.workspace]
 members = ["packages/*"]
 
-# TEMPORARY: editable install of the sibling repolish checkout (see the
-# dev-group comment above). Drop when a facets release ships.
-[tool.uv.sources]
-repolish = { path = "/home/jmlopez/Work/repolish", editable = true }
+# Local repolish override toggle for unreleased feature testing.
+# Uncomment both lines below to use local repolish, then re-lock/sync.
+# [tool.uv.sources]
+# repolish = { path = "../../Work/repolish", editable = true }
+
+# NOTE: the dev-group repolish pin below must stay a direct URL, never a
+# [tool.uv.sources] override. Sources on the workspace root leak into any
+# consumer resolving a member package from git (uv rewrites a local path
+# override relative to its checkout), so a repolish override here breaks
+# installs of devkit-workspace from the published branch.
 
 [tool.releez]
 create-pr = true
@@ -35,13 +41,14 @@ post-changelog = [
 
 [dependency-groups]
 dev = [
-  # TEMPORARY: same local editable install as the uv-toolbox repolish
-  # env — provider facets only exist on repolish's unreleased
-  # topic/facets-recreate branch. Without this the workspace venv
-  # resolves PyPI repolish (via the member packages' >=1.6.2,<2 dep)
-  # and the facet code fails to import. Drop when a facets release
-  # ships.
-  "repolish",
+  # TEMPORARY: provider facets only exist on repolish's unreleased
+  # topic/facets-recreate branch. Direct URL (not a [tool.uv.sources]
+  # override — see the note above), so the pin stays dev-local and never
+  # leaks into consumers resolving a member package from git. Without
+  # this the workspace venv resolves PyPI repolish (via the member
+  # packages' >=1.6.2,<2 dep) and the facet code fails to import. Drop
+  # when a facets release ships.
+  "repolish @ git+https://github.com/hotdog-werx/repolish@topic/facets-recreate",
   "pytest >= 9.0.2",
   "pytest-mock >= 3.14.1",
   "pytest-cov >= 6.2.1",
