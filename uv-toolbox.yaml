@@ -7,7 +7,11 @@ environments:
       releez==1.0.1
   - name: repolish
     requirements: |
-      repolish>=1.4.0,<2
+      # TEMPORARY: provider facets only exist on repolish's unreleased
+      # topic/facets-recreate branch, so the sibling checkout is installed
+      # editable; revert to the PyPI bound (repolish>=1.4.0,<2) when a
+      # facets release ships.
+      -e /home/jmlopez/Work/repolish
       -e ./packages/devkit-workspace
       -e ./packages/devkit-python
       -e ./packages/devkit-releez

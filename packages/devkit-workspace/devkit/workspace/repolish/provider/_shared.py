@@ -61,9 +61,20 @@ class _SharedWorkspaceBehavior(
         # NOTE: mise.toml base-scaffold merging isn't built yet. LICENSE and
         # README.md also need anchor-based merging into potentially-existing
         # files and are likewise not yet implemented.
+        #
+        # The workflow mappings are the devkit CI treatment (reusable
+        # workflows expecting devkit mise task names); a repo that runs its
+        # own CI (e.g. repolish) sets manage_workflows: false and this
+        # provider claims only the gitignore facet's file. The sources are
+        # `_repolish.`-prefixed (staging-only, same convention as the
+        # gitignore facet): when the mappings opt out, unmapped conditional
+        # templates are never staged, so the files can't surface through
+        # auto-staging either.
+        if not context.manage_workflows:
+            return {}
         return {
-            '.github/workflows/ci-checks.yaml': '.github/workflows/ci-checks.yaml',
+            '.github/workflows/ci-checks.yaml': ('.github/workflows/_repolish.ci-checks.yaml'),
             '.github/workflows/deploy-docs.yaml': (
-                '.github/workflows/deploy-docs.yaml' if context.enable_docs else None
+                '.github/workflows/_repolish.deploy-docs.yaml' if context.enable_docs else None
             ),
         }

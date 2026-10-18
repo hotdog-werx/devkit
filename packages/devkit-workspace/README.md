@@ -1,4 +1,4 @@
-# hotdogwerx-devkit-workspace
+# devkit-workspace
 
 A [repolish](https://github.com/hotdog-werx/repolish) provider.
 

@@ -105,8 +105,8 @@ something that runs silently on every install.
 [task_config]
 includes = [
   "mise-tasks",
-  ".repolish/hotdogwerx-devkit-workspace/mise-tasks",
-  ".repolish/hotdogwerx-devkit-workspace/mise-tasks.toml",
+  ".repolish/devkit-workspace/mise-tasks",
+  ".repolish/devkit-workspace/mise-tasks.toml",
   ".repolish/hotdogwerx-devkit-python/mise-tasks",
 ]
 ```

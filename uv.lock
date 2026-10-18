@@ -5,9 +5,9 @@ requires-python = ">=3.11"
 [manifest]
 members = [
     "devkit",
+    "devkit-workspace",
     "hotdogwerx-devkit-python",
     "hotdogwerx-devkit-releez",
-    "hotdogwerx-devkit-workspace",
 ]
 
 [[package]]
@@ -151,6 +151,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
+    { name = "repolish" },
     { name = "ty" },
 ]
 
@@ -161,7 +162,31 @@ dev = [
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-cov", specifier = ">=6.2.1" },
     { name = "pytest-mock", specifier = ">=3.14.1" },
+    { name = "repolish", editable = "/home/jmlopez/Work/repolish" },
     { name = "ty", specifier = ">=0.0.16" },
+]
+
+[[package]]
+name = "devkit-workspace"
+version = "0.1.0"
+source = { editable = "packages/devkit-workspace" }
+dependencies = [
+    { name = "repolish" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-mock" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "repolish", editable = "/home/jmlopez/Work/repolish" }]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-mock" },
 ]
 
 [[package]]
@@ -178,11 +203,15 @@ name = "hotdogwerx-devkit-python"
 version = "0.1.0"
 source = { editable = "packages/devkit-python" }
 dependencies = [
+    { name = "devkit-workspace" },
     { name = "repolish" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "repolish", specifier = ">=1.6.2,<2" }]
+requires-dist = [
+    { name = "devkit-workspace", editable = "packages/devkit-workspace" },
+    { name = "repolish", editable = "/home/jmlopez/Work/repolish" },
+]
 
 [[package]]
 name = "hotdogwerx-devkit-releez"
@@ -193,30 +222,7 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "repolish", specifier = ">=1.6.2,<2" }]
-
-[[package]]
-name = "hotdogwerx-devkit-workspace"
-version = "0.1.0"
-source = { editable = "packages/devkit-workspace" }
-dependencies = [
-    { name = "repolish" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-mock" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "repolish", specifier = ">=1.6.2,<2" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-mock" },
-]
+requires-dist = [{ name = "repolish", editable = "/home/jmlopez/Work/repolish" }]
 
 [[package]]
 name = "hotlog"
@@ -591,8 +597,7 @@ wheels = [
 
 [[package]]
 name = "repolish"
-version = "1.6.2"
-source = { registry = "https://pypi.org/simple" }
+source = { editable = "/home/jmlopez/Work/repolish" }
 dependencies = [
     { name = "cyclopts" },
     { name = "hotlog" },
@@ -600,9 +605,23 @@ dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/54/fa/e1d8682d4a0d2ba0b674f01fd6efa5e1998f5869c66624f0b6c8127d9b3a/repolish-1.6.2.tar.gz", hash = "sha256:9a566bfd4a348ca1c8b4219cbc570381335fb09d0d43f4251e5a492366ee17bc", size = 126504, upload-time = "2026-07-23T01:54:41.143Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/7c/26/03ea0f7be10fbc937b7b7f9f388a6f89dacc5f7a0006bdd6a8bb3246722f/repolish-1.6.2-py3-none-any.whl", hash = "sha256:809d2fe9824b2b789006ca30934937cdaf774a7a98ec8de4970501b6b7070d3e", size = 177031, upload-time = "2026-07-23T01:54:43.382Z" },
+
+[package.metadata]
+requires-dist = [
+    { name = "cyclopts", specifier = ">=4.8.0" },
+    { name = "hotlog", specifier = ">=0.2.0" },
+    { name = "jinja2", specifier = "==3.1.6" },
+    { name = "pydantic", specifier = ">=2.0.0" },
+    { name = "typing-extensions", marker = "python_full_version < '3.12'", specifier = ">=4.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "filelock", specifier = ">=3.32.3" },
+    { name = "pytest", specifier = ">=8.0.0" },
+    { name = "pytest-cov", specifier = ">=4.0.0" },
+    { name = "pytest-mock", specifier = ">=3.12.0" },
+    { name = "pytest-xdist", specifier = ">=3.8.0" },
 ]
 
 [[package]]

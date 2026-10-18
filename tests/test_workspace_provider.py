@@ -8,14 +8,14 @@ from repolish.testing import ProviderTestBed
 CI_CHECKS = '.github/workflows/ci-checks.yaml'
 DEPLOY_DOCS = '.github/workflows/deploy-docs.yaml'
 
-# NOTE: create_file_mappings() references these without the .jinja suffix
-# (the real repolish CLI resolves that automatically), but
-# ProviderTestBed.render_all()'s dest-mapped rendering does NOT do that
-# fallback lookup — it only auto-discovers the literal on-disk name. So
-# these tests call bed.render() directly with the literal .jinja-suffixed
-# path instead of relying on render_all()'s dest-keyed dict for these two
-# templates specifically.
-CI_CHECKS_TEMPLATE = '.github/workflows/ci-checks.yaml.jinja'
+# NOTE: create_file_mappings() points at the `_repolish.`-prefixed
+# conditional templates (staging-only). ProviderTestBed.render_all()'s
+# dest-mapped rendering does not resolve those, so these tests call
+# bed.render() directly with the literal .jinja-suffixed path instead of
+# relying on render_all()'s dest-keyed dict for these two templates
+# specifically.
+CI_CHECKS_TEMPLATE = '.github/workflows/_repolish.ci-checks.yaml.jinja'
+DEPLOY_DOCS_TEMPLATE = '.github/workflows/_repolish.deploy-docs.yaml.jinja'
 
 
 @pytest.fixture
@@ -75,9 +75,9 @@ def test_file_mappings_omit_deploy_docs_when_disabled(bed_no_docs_no_python):
 
 
 def test_file_mappings_include_deploy_docs_when_enabled(bed_docs_and_python):
-    """enable_docs=True maps deploy-docs.yaml to itself (rendered)."""
+    """enable_docs=True maps deploy-docs.yaml to its conditional template."""
     mappings = bed_docs_and_python.file_mappings()
-    assert mappings[DEPLOY_DOCS] == DEPLOY_DOCS
+    assert mappings[DEPLOY_DOCS] == '.github/workflows/_repolish.deploy-docs.yaml'
 
 
 def test_render_all_succeeds_without_docs_or_python(bed_no_docs_no_python):
@@ -175,7 +175,5 @@ def test_enable_docs_false_passed_through(bed_no_docs_no_python):
 
 def test_deploy_docs_references_devkit_ref(bed_docs_and_python):
     """deploy-docs.yaml pins the reusable workflow to devkit_ref."""
-    content = bed_docs_and_python.render(
-        '.github/workflows/deploy-docs.yaml.jinja',
-    )
+    content = bed_docs_and_python.render(DEPLOY_DOCS_TEMPLATE)
     assert '__workspace_deploy-docs.yaml@devkit-pin' in content

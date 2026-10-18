@@ -1,6 +1,6 @@
 # Providers
 
-Each devkit package (`hotdogwerx-devkit-workspace`, `hotdogwerx-devkit-python`,
+Each devkit package (`devkit-workspace`, `hotdogwerx-devkit-python`,
 `hotdogwerx-devkit-releez`) implements a `repolish.Provider` subclass. A
 provider has three jobs:
 
@@ -38,7 +38,7 @@ installed). Devkit's own repo dogfoods its providers differently — via
 `provider_root: ./packages/devkit-<name>/...` pointing directly at the package
 source, since there's nothing to "install" when you _are_ the provider.
 
-## `hotdogwerx-devkit-workspace`
+## `devkit-workspace`
 
 Repo-agnostic concerns any repo benefits from, regardless of language:
 

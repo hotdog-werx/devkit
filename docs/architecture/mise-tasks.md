@@ -17,8 +17,8 @@ directory. A consumer's `mise.toml` looks like this:
 [task_config]
 includes = [
   "mise-tasks", # the default, kept explicitly
-  ".repolish/hotdogwerx-devkit-workspace/mise-tasks",
-  ".repolish/hotdogwerx-devkit-workspace/mise-tasks.toml",
+  ".repolish/devkit-workspace/mise-tasks",
+  ".repolish/devkit-workspace/mise-tasks.toml",
   ".repolish/hotdogwerx-devkit-python/mise-tasks",
 ]
 ```

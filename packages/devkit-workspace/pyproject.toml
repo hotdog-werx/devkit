@@ -1,5 +1,5 @@
 [project]
-name = "hotdogwerx-devkit-workspace"
+name = "devkit-workspace"
 description = "Repolish provider for shared workspace tooling, CI, docs, and formatting"
 readme = "README.md"
 license = "MIT"
