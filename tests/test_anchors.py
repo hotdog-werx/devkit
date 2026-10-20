@@ -135,11 +135,11 @@ class KeepBlockTemplate:
     tag: str
 
     @property
-    def keep_spec(self) -> dict[str, KeepBlockSpec]:
-        """The keep-block spec, as the CLI builds it from the directive.
+    def keep_spec(self) -> KeepPatterns:
+        """The keep spec, as the CLI builds it from the directive.
 
         Returns:
-            The spec keyed by the keep-block tag.
+            The keep patterns with the block keyed by its tag.
         """
         return KeepPatterns(
             blocks={self.tag: KeepBlockSpec(start=f'## start-{self.tag}', end=f'## end-{self.tag}')},

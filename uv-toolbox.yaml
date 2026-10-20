@@ -1,22 +1,12 @@
+venv_path: .uv-toolbox
+
+# No "repolish" env here: devkit hosts its own providers as workspace
+# members, so repolish comes from the project venv (see DK_UVTB_REPOLISH_EXEC
+# in mise.toml). The "tools" env stays toolbox-managed.
 environments:
   - name: tools
-    requirements: |
-      ruff==0.15.20
-      complexipy==6.0.1
-      zensical==0.0.47
-      releez==1.0.1
-  - name: repolish
-    requirements: |
-      # TEMPORARY: provider facets only exist on repolish's unreleased
-      # topic/facets-recreate branch, so the sibling checkout is installed
-      # editable; revert to the PyPI bound (repolish>=1.4.0,<2) when a
-      # facets release ships.
-      -e /home/jmlopez/Work/repolish
-      -e ./packages/devkit-workspace
-      -e ./packages/devkit-python
-      -e ./packages/devkit-releez
-    executables:
-      - repolish
-      - devkit-workspace-link
-      - devkit-python-link
-      - devkit-releez-link
+    dependencies:
+      - ruff==0.15.20
+      - complexipy==6.0.1
+      - zensical==0.0.47
+      - releez==1.0.1

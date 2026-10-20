@@ -10,11 +10,15 @@ run = "dprint check"
 [tasks."workspace:actionlint:check"]
 run = "actionlint"
 
+# repolish runs through DK_UVTB_REPOLISH_EXEC (the tasks below assume the
+# env defaults file provides it): consumer repos run it in the uv-toolbox
+# "repolish" env by default, provider repos hosting their providers as
+# project dependencies override it to "" in their mise.toml [env].
 [tasks."workspace:repolish:apply"]
-run = "uv-toolbox exec --env repolish -- repolish apply"
+run = '{{ env.DK_UVTB_REPOLISH_EXEC }} repolish apply'
 
 [tasks."workspace:repolish:check"]
-run = "uv-toolbox exec --env repolish -- repolish apply --check"
+run = '{{ env.DK_UVTB_REPOLISH_EXEC }} repolish apply --check'
 
 [tasks."workspace:docs:dev"]
 run = "zensical serve --dev-addr=127.0.0.1:8000"
@@ -39,11 +43,15 @@ depends = [
 # --- postinstall hooks (add to [hooks] postinstall in the consumer's own
 # mise.toml) ---
 # uv-toolbox install provisions the "repolish" env (repolish + devkit
-# provider packages) before repolish link can use it. repolish link then
-# materializes provider-resource symlinks (.editorconfig, dprint.json) —
-# never committed to git (their symlink source is an absolute path,
-# portable only within the machine that created it), so every environment
-# links them fresh on every `mise install`.
+# provider packages) before repolish link can use it, unless the repo
+# overrides DK_UVTB_REPOLISH_EXEC to "" — provider repos hosting their
+# providers as project dependencies have no uv-toolbox repolish env, and
+# their hooks call repolish straight from the project venv (mise's
+# uv_venv_auto puts it on PATH). repolish link then materializes
+# provider-resource symlinks (.editorconfig, dprint.json) — never
+# committed to git (their symlink source is an absolute path, portable
+# only within the machine that created it), so every environment links
+# them fresh on every `mise install`.
 #
 # A single multi-line string (one subprocess, sequential) is used instead of
 # an array of strings (one subprocess per entry) — newer mise releases (seen
@@ -51,9 +59,17 @@ depends = [
 # silently dropping the earlier ones. The multi-line-string form isn't
 # subject to that per-entry dispatch at all, so it isn't exposed to the bug.
 #
+# Consumer repo (uv-toolbox repolish env):
 # [hooks]
 # postinstall = """
 # uv-toolbox install
 # uv-toolbox exec --env repolish -- repolish link
+# mise run workspace:setup-hook
+# """
+#
+# Provider repo (repolish from the project venv):
+# [hooks]
+# postinstall = """
+# repolish link
 # mise run workspace:setup-hook
 # """

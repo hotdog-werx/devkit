@@ -151,7 +151,6 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
-    { name = "repolish" },
     { name = "ty" },
 ]
 
@@ -162,7 +161,6 @@ dev = [
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-cov", specifier = ">=6.2.1" },
     { name = "pytest-mock", specifier = ">=3.14.1" },
-    { name = "repolish", git = "https://github.com/hotdog-werx/repolish?rev=topic%2Ffacets-recreate" },
     { name = "ty", specifier = ">=0.0.16" },
 ]
 
@@ -187,7 +185,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "hotdogwerx-devkit-workspace", editable = "packages/devkit-workspace" },
-    { name = "repolish", specifier = ">=1.6.2,<2" },
+    { name = "repolish", specifier = ">=1.17.0,<2" },
 ]
 
 [[package]]
@@ -199,7 +197,7 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "repolish", specifier = ">=1.6.2,<2" }]
+requires-dist = [{ name = "repolish", specifier = ">=1.17.0,<2" }]
 
 [[package]]
 name = "hotdogwerx-devkit-workspace"
@@ -216,7 +214,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "repolish", specifier = ">=1.6.2,<2" }]
+requires-dist = [{ name = "repolish", specifier = ">=1.17.0,<2" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -597,14 +595,18 @@ wheels = [
 
 [[package]]
 name = "repolish"
-version = "1.16.0"
-source = { git = "https://github.com/hotdog-werx/repolish?rev=topic%2Ffacets-recreate#c0b80c57904ccbc2cb9586e006c1576506c6971f" }
+version = "1.17.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cyclopts" },
     { name = "hotlog" },
     { name = "jinja2" },
     { name = "pydantic" },
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/97/c6/37d00b9d220205d8eea57e3406a6443de1ea0f4f8cdeb7ec7ccdd5f615ea/repolish-1.17.0.tar.gz", hash = "sha256:56f4f2606fde4a14c753d283743b7d07223fef7141155d809732a748cd7b6f43", size = 270669, upload-time = "2026-10-19T13:06:08.825Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c5/49/a6fa21652806e76fb41343fec4a8b573ee82ad36f0476ec84b65d86fb277/repolish-1.17.0-py3-none-any.whl", hash = "sha256:7e3f8525bdb2d6d77a1471b4ef8923d3b3c8fd2a1dcdc3df2156994e980079c9", size = 363053, upload-time = "2026-10-19T13:06:07.368Z" },
 ]
 
 [[package]]

@@ -12,6 +12,12 @@ GIT_CLIFF_CONFIG = "./cliff.toml"
 # auto-detection would fall back to the wrong target, so it's set
 # explicitly here instead.
 PYTEST_COV_TARGET = "devkit"
+# devkit hosts its own providers as workspace members, so repolish comes
+# from the project venv (a dependency of the members) instead of a
+# uv-toolbox env: the task templates' DK_UVTB_REPOLISH_EXEC prefix is
+# overridden to empty, and mise's uv_venv_auto puts repolish on PATH.
+# The uv-toolbox form stays the default for consumer repos.
+DK_UVTB_REPOLISH_EXEC = ""
 
 [tools]
 uv = "0.11.26"
@@ -21,7 +27,7 @@ git-cliff = "2.13.1"
 actionlint = "1.7.11"
 shellcheck = "0.11.0"
 
-"pipx:uv-toolbox" = "0.3.2"
+"pipx:uv-toolbox" = "0.4.1"
 "pipx:ruff" = "0.14.14"
 "pipx:ty" = "0.0.59"
 "pipx:complexipy" = "4.0.2"
@@ -29,13 +35,14 @@ shellcheck = "0.11.0"
 "pipx:zensical" = "0.0.19"
 "pipx:releez" = "1.1.1"
 
-# repolish lives only in the uv-toolbox-managed "repolish" env (not devkit's
-# own .venv, not a mise-managed tool) — uv-toolbox install provisions it
-# before repolish link can use it. repolish link then materializes
+# repolish comes from devkit's own .venv — the workspace members depend on
+# it, `uv sync --all-packages` installs it, and mise's uv_venv_auto puts
+# it on PATH for tasks and hooks. repolish link materializes
 # provider-resource symlinks (.editorconfig, dprint.json) — these are never
 # committed to git (their symlink source is an absolute path, portable only
 # within the machine that created it), so every environment links them
-# fresh on every `mise install`.
+# fresh on every `mise install`. The uv-toolbox install hook stays: the
+# tools env is still toolbox-managed.
 #
 # [[hooks.postinstall]] (array-of-tables, one entry per subprocess) is used
 # instead of a flat postinstall = ["...", "..."] array — newer mise releases
@@ -45,7 +52,7 @@ shellcheck = "0.11.0"
 run = "uv-toolbox install"
 
 [[hooks.postinstall]]
-run = "uv-toolbox exec --env repolish -- repolish link"
+run = "repolish link"
 
 [[hooks.postinstall]]
 run = "mise run workspace:setup-hook"

@@ -69,6 +69,19 @@ class GitignoreInputs(BaseInputs):
     entries: list[str] = Field(default_factory=list)
 
 
+def _merge_into_section(
+    merged: list[GitignoreSection],
+    name: str,
+    entries: list[str],
+) -> None:
+    """Add or extend *name*'s section with *entries* (order-preserving, dedup)."""
+    target = next((s for s in merged if s.name == name), None)
+    if target is None:
+        target = GitignoreSection(name=name)
+        merged.append(target)
+    target.entries.extend(entry for entry in entries if entry not in target.entries)
+
+
 class GitignoreFacet(ProviderFacet[GitignoreFacetContext, GitignoreInputs]):
     """Owns `.gitignore` for the workspace provider.
 
@@ -101,16 +114,7 @@ class GitignoreFacet(ProviderFacet[GitignoreFacetContext, GitignoreInputs]):
                     self.name,
                 )
                 continue
-            target = next(
-                (s for s in merged if s.name == name),
-                None,
-            )
-            if target is None:
-                target = GitignoreSection(name=name)
-                merged.append(target)
-            for entry in payload.entries:
-                if entry not in target.entries:
-                    target.entries.append(entry)
+            _merge_into_section(merged, name, payload.entries)
         return opt.own_context.model_copy(update={'sections': merged})
 
     @override
