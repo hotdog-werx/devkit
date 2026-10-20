@@ -88,6 +88,7 @@ depends = [
   "python:check:pydoclint",
   "python:check:coverage",
   "workspace:actionlint:check",
+  "workspace:repolish:check",
 ]
 
 [tasks.repo-checks]

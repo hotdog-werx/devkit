@@ -35,26 +35,17 @@ class GitignoreSection(BaseModel):
 class GitignoreFacetContext(BaseContext):
     """Context for the workspace provider's gitignore facet."""
 
-    sections: list[GitignoreSection] = Field(
-        default_factory=lambda: [
-            GitignoreSection(
-                name='workspace',
-                entries=[
-                    '.DS_Store',
-                    'scratch/**',
-                    'mise.local.toml',
-                    'tmp*',
-                    '.tmp*',
-                    '/.editorconfig',
-                ],
-            ),
-        ],
-    )
-    """The rendered .gitignore's provider sections, in order: the workspace
-    baseline first, then one section per provider that sent GitignoreInputs.
-    Each section renders under a ``## <name>`` header so it is always
-    clear why an entry is there. Note ``.repolish`` needs no entry here:
-    repolish drops a ``.gitignore`` inside the folder itself."""
+    sections: list[GitignoreSection] = Field(default_factory=list)
+    """The rendered .gitignore's provider sections, in received order.
+
+    Sections start empty: every entry, the workspace baseline included,
+    arrives as a routed ``GitignoreInputs`` payload (the workspace
+    provider sends its own baseline through ``provide_inputs``, so a
+    provider's ignores live with the provider, not baked into this
+    facet). Each section renders under a ``## <sender.alias>`` header so
+    it is always clear why an entry is there. Note ``.repolish`` needs
+    no entry: repolish drops a ``.gitignore`` inside the folder itself.
+    """
 
 
 class GitignoreInputs(BaseInputs):
@@ -85,13 +76,15 @@ def _merge_into_section(
 class GitignoreFacet(ProviderFacet[GitignoreFacetContext, GitignoreInputs]):
     """Owns `.gitignore` for the workspace provider.
 
-    The rendered head carries one labeled section per provider: the
-    workspace baseline first, then one section per sender of GitignoreInputs
-    (exact-schema routing delivers them here), labeled with the sender's
-    framework-stamped `payload.sender.alias`. Everything below the
-    `## repo-overrides` keep-rest marker stays repo-owned, so a repo can
-    keep its own entries and even negate a provider entry (e.g.
-    `!/.editorconfig` after the workspace section ignores `/.editorconfig`).
+    The rendered head carries one labeled section per sender of
+    GitignoreInputs (exact-schema routing delivers them here, including
+    the workspace provider's own provide_inputs payload: a provider's
+    emitted inputs route back to its facets, so no entry is special-cased
+    in the facet), labeled with the sender's framework-stamped
+    `payload.sender.alias`. Everything below the `## repo-overrides`
+    keep-rest marker stays repo-owned, so a repo can keep its own entries
+    and even negate a provider entry (e.g. `!/.editorconfig` after the
+    workspace section ignores `/.editorconfig`).
     """
 
     name = 'gitignore'

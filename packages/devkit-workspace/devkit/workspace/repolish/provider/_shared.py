@@ -1,10 +1,15 @@
+from collections.abc import Sequence
+
 from devkit.workspace.repolish.models import (
     WorkspaceProviderContext,
     WorkspaceProviderInputs,
 )
+from devkit.workspace.repolish.provider.facets.gitignore import GitignoreInputs
 from repolish import (
+    BaseInputs,
     FinalizeContextOptions,
     ModeHandler,
+    ProvideInputsOptions,
     Symlink,
     TemplateMapping,
 )
@@ -25,6 +30,34 @@ class _SharedWorkspaceBehavior(
     workspace:repolish:link mise task), which recreates them fresh and
     correctly for that machine's checkout path.
     """
+
+    @override
+    def provide_inputs(
+        self,
+        opt: ProvideInputsOptions[WorkspaceProviderContext],
+    ) -> Sequence[BaseInputs]:
+        """State which files the workspace itself wants ignored.
+
+        The baseline is not baked into the gitignore facet: this payload
+        routes back to this provider's own facet (a provider's emitted
+        inputs are delivered to every matching provider, itself included),
+        so the baseline renders as the provider's own labeled section and
+        the facet stays generic — it renders whatever it receives, and
+        what a provider wants ignored lives with the provider. In a repo
+        without the workspace provider the payload simply routes nowhere.
+        """
+        return [
+            GitignoreInputs(
+                entries=[
+                    '.DS_Store',
+                    'scratch/**',
+                    'mise.local.toml',
+                    'tmp*',
+                    '.tmp*',
+                    '/.editorconfig',
+                ],
+            ),
+        ]
 
     @override
     def finalize_context(
