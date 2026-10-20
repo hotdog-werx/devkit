@@ -9,23 +9,35 @@ Devkit's providers, and `repolish` itself, live in their own
 never in the consumer's own `.venv`, and never installed as a plain mise-managed
 tool. This matters: `repolish` genuinely needs to be part of a uv-toolbox
 environment alongside the provider packages it loads, or the whole provisioning
-order breaks (see [Postinstall hooks](#3-wire-up-postinstall-hooks)).
+order breaks (see [Postinstall hooks](#3-wire-up-the-postinstall-hooks)).
 
 ```yaml
 # uv-toolbox.yaml
 environments:
   - name: repolish
-    requirements: |
-      repolish
-      git+https://github.com/hotdog-werx/devkit.git@<devkit-ref>#subdirectory=packages/devkit-workspace
-      git+https://github.com/hotdog-werx/devkit.git@<devkit-ref>#subdirectory=packages/devkit-python
-      git+https://github.com/hotdog-werx/devkit.git@<devkit-ref>#subdirectory=packages/devkit-releez
-    executables:
+    dependencies:
       - repolish
-      - devkit-workspace-link
-      - devkit-python-link
-      - devkit-releez-link
+      - hotdogwerx-devkit-workspace
+      - hotdogwerx-devkit-python
+      - hotdogwerx-devkit-releez
+    sources:
+      hotdogwerx-devkit-workspace:
+        git: https://github.com/hotdog-werx/devkit
+        tag: <immutable-devkit-tag>
+        subdirectory: packages/devkit-workspace
+      hotdogwerx-devkit-python:
+        git: https://github.com/hotdog-werx/devkit
+        tag: <immutable-devkit-tag>
+        subdirectory: packages/devkit-python
+      hotdogwerx-devkit-releez:
+        git: https://github.com/hotdog-werx/devkit
+        tag: <immutable-devkit-tag>
+        subdirectory: packages/devkit-releez
 ```
+
+The `dependencies`+`sources` form is uv-toolbox 0.4.1+ (the `requirements` key
+it replaces is removed in 1.0); pin by `tag:` for an immutable release, or by
+`rev:` when pointing at a raw commit sha.
 
 Install every selected provider and reference every reusable workflow from one
 immutable Devkit Git snapshot. Devkit releases and versions the three provider
@@ -69,37 +81,50 @@ expansion). `mise run` does its own upward search for `mise.toml` (the same way
 git finds `.git`), so it resolves correctly from deep inside the staging
 directory; a bare `dprint` can't find the real `dprint.json`.
 
-## 3. Wire up postinstall hooks
+## 3. Wire up the postinstall hooks
 
 ```toml
 # mise.toml
 [[hooks.postinstall]]
-run = "uv-toolbox install"
+run = "mise run workspace:uv-toolbox-install"
 
 [[hooks.postinstall]]
-run = "uv-toolbox exec --env repolish -- repolish link"
+run = "mise run workspace:repolish:link"
 
 [[hooks.postinstall]]
 run = "mise run workspace:setup-hook"
 ```
 
-**Use `[[hooks.postinstall]]` (array-of-tables), not a flat
-`postinstall = ["...", "..."]` array.** Newer mise releases (2026.7.5+) silently
-run only the _last_ entry of the flat-array form, dropping the earlier steps —
-this broke CI in a way that was invisible locally, since the local mise version
-at the time still ran all entries correctly. There is no warning when this
-happens; the flat form should be treated as unreliable for sequential hooks
-going forward.
+Three entries, each a named task, so the hook stays dumb and behavior lives with
+the tasks. The first two run in every environment: `uv-toolbox install`
+provisions the envs (this is where consumer repos get repolish from), and
+`repolish link` materializes the config symlinks (`.editorconfig`,
+`dprint.json`) — never committed to git (absolute symlink sources are
+machine-specific), so every environment links them fresh on every
+`mise install`, CI runners included (mise-action's tool install fires these
+hooks on every fresh runner), which is what keeps `workspace:dprint:check`
+working there.
 
-`repolish link` (not `repolish apply`) is what belongs in a postinstall hook —
-it only materializes the whole-resources-directory symlinks
-(`.repolish/devkit-<name>/`, used by every referenced-in-place mise task) and
-the static config symlinks (`.editorconfig`, `dprint.json`). It's safe to run on
-every `mise install` without review. `repolish apply` actually
-writes/regenerates tracked files and should stay a manual, reviewed operation
-(`mise run workspace:repolish:check`/an explicit `repolish
-apply`), not
-something that runs silently on every install.
+The third entry is the local-only gate over `setup`: it skips when `CI` is set,
+because workflow jobs run their own targeted steps — python checks run
+`python:uv-sync` themselves, the docs job has no Python to sync at all, so a
+full sync there is wasted work. `setup` stays a local convenience, and what it
+does is the providers' decision, not the hook's.
+
+**Use the array-of-tables form, not a flat array.** Newer mise releases
+(2026.7.5+) silently run only the _last_ entry of a multi-entry flat
+`postinstall` array, dropping the earlier steps — this broke CI in a way that
+was invisible locally, since the local mise version at the time still ran all
+entries correctly. There is no warning when this happens.
+
+`repolish link` (not `repolish apply`) is what belongs in a hook — it only
+materializes the whole-resources-directory symlinks (`.repolish/devkit-<name>/`,
+used by every referenced-in-place mise task) and the static config symlinks.
+It's safe to run on every `mise install` without review. `repolish apply`
+actually writes/regenerates tracked files and should stay a manual, reviewed
+operation (`mise run workspace:repolish:check`/an explicit `repolish
+apply`),
+not something that runs silently on every install.
 
 ## 4. Add `[task_config] includes`
 
@@ -139,6 +164,6 @@ mise run repo-checks                # dprint/actionlint/repolish, all clean
 If you're adding a keep-block-carrying file (most likely `ci-checks.yaml`, for a
 consumer-specific job that must live in the same file as
 `repo-checks`/`python-checks`), read
-[Repolish Mechanics](./architecture/repolish-mechanics.md#keep-block--keep-rest-preserves-local-content)
+[Repolish Mechanics](./architecture/repolish-mechanics.md#keep-block-keep-rest-preserves-local-content)
 first — the dprint-indentation gotcha there is easy to hit and easy to miss in a
 single verification pass.

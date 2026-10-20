@@ -55,9 +55,12 @@ Repo-agnostic concerns any repo benefits from, regardless of language:
 - mise tasks: `workspace:dprint:format`, `workspace:dprint:check`,
   `workspace:actionlint:check`, `workspace:repolish:apply`,
   `workspace:repolish:check`, `workspace:repolish:link`,
-  `workspace:uv-toolbox-lock:check`, `workspace:docs:dev`,
-  `workspace:docs:build`, `workspace:docs:clean`, plus the
-  `workspace:setup-hook`/`workspace:pnpm-install` file-tasks
+  `workspace:uv-toolbox-install`, `workspace:uv-toolbox-lock:check`,
+  `workspace:docs:dev`, `workspace:docs:build`, `workspace:docs:clean`, plus the
+  `workspace:pnpm-install`/`workspace:setup-hook` file-tasks and the `setup`
+  task (the local-only full environment: `setup-hook` gates it out of CI, where
+  workflow jobs run their own targeted steps; the postinstall hooks run the
+  uv-toolbox install, the repolish links, and that gate on every `mise install`)
 
 Context detection: `has_python` comes from the loaded provider set and
 `enable_docs` from `zensical.toml` presence. Repository identity and year come
@@ -96,7 +99,7 @@ Release/publish/changelog automation:
   `__releez_validate-release.yaml`
 - No mise tasks at all — releez itself already handles tag-pulling before a
   release, and `uv build`/`uv publish` need no wrapper (see
-  [Reusable Workflows](../ci/reusable-workflows.md#__releez_publishyaml))
+  [Reusable Workflows](../ci/reusable-workflows.md#__releez_publishyaml-__releez_lint-pr-titleyaml-__releez_validate-releaseyaml))
 
 `use_self_action` defaults to false. Releez itself explicitly sets it to true to
 dogfood its local action; other GitHub Action repositories are therefore not

@@ -18,6 +18,10 @@ PYTEST_COV_TARGET = "devkit"
 # overridden to empty, and mise's uv_venv_auto puts repolish on PATH.
 # The uv-toolbox form stays the default for consumer repos.
 DK_UVTB_REPOLISH_EXEC = ""
+# complexipy and zensical live only in the uv-toolbox "tools" env (no
+# pipx duplicates in [tools] below), so the tasks that call them route
+# through the same variable consumer repos get from default.env.
+DK_UVTB_TOOLS_EXEC = "uv-toolbox exec -e tools --"
 
 [tools]
 uv = "0.11.26"
@@ -30,29 +34,31 @@ shellcheck = "0.11.0"
 "pipx:uv-toolbox" = "0.4.1"
 "pipx:ruff" = "0.14.14"
 "pipx:ty" = "0.0.59"
-"pipx:complexipy" = "4.0.2"
 "pipx:pydoclint" = "0.9.1"
-"pipx:zensical" = "0.0.19"
 "pipx:releez" = "1.1.1"
+# complexipy and zensical are NOT here: they live in the uv-toolbox
+# "tools" env and tasks call them through DK_UVTB_TOOLS_EXEC, so there
+# is one version of each tool, not two drifting apart.
 
-# repolish comes from devkit's own .venv — the workspace members depend on
-# it, `uv sync --all-packages` installs it, and mise's uv_venv_auto puts
-# it on PATH for tasks and hooks. repolish link materializes
-# provider-resource symlinks (.editorconfig, dprint.json) — these are never
-# committed to git (their symlink source is an absolute path, portable only
-# within the machine that created it), so every environment links them
-# fresh on every `mise install`. The uv-toolbox install hook stays: the
-# tools env is still toolbox-managed.
+# `mise install` (locally, and in CI through mise-action) runs the pieces
+# every environment needs: the uv-toolbox envs, the repolish resource
+# links (the .editorconfig/dprint.json symlinks are never committed —
+# their source is an absolute path, portable only within the machine
+# that created it — so every environment links them fresh, which is what
+# keeps workspace:dprint:check working on a fresh runner), and the
+# setup-hook gate.
 #
-# [[hooks.postinstall]] (array-of-tables, one entry per subprocess) is used
-# instead of a flat postinstall = ["...", "..."] array — newer mise releases
-# (2026.7.5 in CI, not 2026.5.15 locally) silently ran only the last entry
-# of the flat-array form.
+# The full `setup` (uv sync, pnpm) deliberately does NOT run in CI:
+# workflow jobs run their own targeted steps (python checks run
+# python:uv-sync themselves, the docs job has no Python to sync at all),
+# so syncing there is wasted work. setup stays a local convenience, and
+# it's up to the providers to decide what it does — the hook only
+# guarantees the common denominator.
 [[hooks.postinstall]]
-run = "uv-toolbox install"
+run = "mise run workspace:uv-toolbox-install"
 
 [[hooks.postinstall]]
-run = "repolish link"
+run = "mise run repolish-link"
 
 [[hooks.postinstall]]
 run = "mise run workspace:setup-hook"
@@ -75,6 +81,19 @@ includes = [
 [tasks.format]
 depends = ["python:format", "workspace:dprint:format"]
 
+# The provider-repo link task. Consumer repos' workspace:repolish:link
+# runs repolish from the uv-toolbox env (installed by the hook's first
+# entry); devkit's repolish comes from the project venv, and `uv run
+# --all-packages` provisions that venv first — so the link works on a
+# fresh clone before setup has synced anything.
+[tasks.repolish-link]
+description = "link repolish provider resources (venv-provisioned)"
+run = "uv run --all-packages repolish link"
+
+# Local-only full environment (workspace:setup-hook skips it in CI):
+# what runs here is the providers' decision — devkit has Python, so it
+# syncs the workspace venv; a docs-only repo's setup would skip uv-sync
+# entirely.
 [tasks.setup]
 depends = ["python:uv-sync", "workspace:pnpm-install"]
 run = "echo Ready!"
