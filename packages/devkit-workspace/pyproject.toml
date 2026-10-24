@@ -15,7 +15,7 @@ classifiers = [
 dependencies = [
   # 1.17.0 ships provider facets (FacetSpec, facet routing); the
   # GitignoreFacet cannot import from anything older.
-  "repolish >=1.17.0, <2",
+  "repolish >=1.18.1, <2",
 ]
 
 [dependency-groups]

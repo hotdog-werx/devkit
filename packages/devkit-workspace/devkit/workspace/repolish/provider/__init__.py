@@ -19,7 +19,7 @@ class WorkspaceProvider(
     root_mode = _SharedWorkspaceBehavior
     standalone_mode = _SharedWorkspaceBehavior
 
-    facets: ClassVar[list[type[ProviderFacet[Any, Any]]]] = [GitignoreFacet]
+    facets: ClassVar[list[type[ProviderFacet[Any, Any]]] | None] = [GitignoreFacet]
 
     @override
     def create_context(self) -> WorkspaceProviderContext:

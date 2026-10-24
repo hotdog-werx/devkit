@@ -15,7 +15,7 @@ dependencies = [
   # GitignoreInputs lives on the workspace provider; importing it is how a
   # sender targets the workspace gitignore facet (exact-schema routing).
   "hotdogwerx-devkit-workspace",
-  "repolish >=1.17.0, <2",
+  "repolish >=1.18.1, <2",
 ]
 
 [project.scripts]
