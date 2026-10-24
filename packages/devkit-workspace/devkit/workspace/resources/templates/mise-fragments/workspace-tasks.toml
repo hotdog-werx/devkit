@@ -10,21 +10,37 @@ run = "dprint check"
 [tasks."workspace:actionlint:check"]
 run = "actionlint"
 
+# repolish runs through DK_UVTB_REPOLISH_EXEC (the tasks below assume the
+# env defaults file provides it): consumer repos run it in the uv-toolbox
+# "repolish" env by default, provider repos hosting their providers as
+# project dependencies override it to "" in their mise.toml [env].
 [tasks."workspace:repolish:apply"]
-run = "uv-toolbox exec --env repolish -- repolish apply"
+run = '{{ env.DK_UVTB_REPOLISH_EXEC }} repolish apply'
 
 [tasks."workspace:repolish:check"]
-run = "uv-toolbox exec --env repolish -- repolish apply --check"
+run = '{{ env.DK_UVTB_REPOLISH_EXEC }} repolish apply --check'
+
+[tasks."workspace:repolish:link"]
+run = '{{ env.DK_UVTB_REPOLISH_EXEC }} repolish link'
+
+[tasks."workspace:uv-toolbox-install"]
+run = "uv-toolbox install"
 
 [tasks."workspace:docs:dev"]
-run = "zensical serve --dev-addr=127.0.0.1:8000"
+run = '{{ env.DK_UVTB_TOOLS_EXEC }} zensical serve --dev-addr=127.0.0.1:8000'
 
 [tasks."workspace:docs:build"]
-run = "zensical build --clean"
+run = '{{ env.DK_UVTB_TOOLS_EXEC }} zensical build --clean'
 
 [tasks."workspace:docs:clean"]
 run = "rm -rf site/"
 
+# Local-only full environment: the workspace:setup-hook file task skips
+# `setup` when CI=true, because workflow jobs run their own targeted steps
+# (python checks run python:uv-sync themselves, the docs job has no Python
+# to sync at all). What runs here is the providers' decision — this
+# fragment assumes the python provider's uv-sync; a repo without Python
+# drops it.
 [tasks.setup]
 depends = ["python:uv-sync", "workspace:pnpm-install"]
 run = "echo Ready!"
@@ -38,22 +54,36 @@ depends = [
 
 # --- postinstall hooks (add to [hooks] postinstall in the consumer's own
 # mise.toml) ---
-# uv-toolbox install provisions the "repolish" env (repolish + devkit
-# provider packages) before repolish link can use it. repolish link then
-# materializes provider-resource symlinks (.editorconfig, dprint.json) —
-# never committed to git (their symlink source is an absolute path,
-# portable only within the machine that created it), so every environment
-# links them fresh on every `mise install`.
 #
-# A single multi-line string (one subprocess, sequential) is used instead of
-# an array of strings (one subprocess per entry) — newer mise releases (seen
-# on 2026.7.5 in CI, not on 2026.5.15 locally) only ran the last array entry,
-# silently dropping the earlier ones. The multi-line-string form isn't
-# subject to that per-entry dispatch at all, so it isn't exposed to the bug.
+# [[hooks.postinstall]]
+# run = "mise run workspace:uv-toolbox-install"
 #
-# [hooks]
-# postinstall = """
-# uv-toolbox install
-# uv-toolbox exec --env repolish -- repolish link
-# mise run workspace:setup-hook
-# """
+# [[hooks.postinstall]]
+# run = "mise run workspace:repolish:link"
+#
+# [[hooks.postinstall]]
+# run = "mise run workspace:setup-hook"
+#
+# Three entries, each a named task, so the hook stays dumb and behavior
+# lives with the tasks: the uv-toolbox envs first (consumer repos get
+# repolish from the "repolish" env installed there), then the resource
+# links — repolish link materializes the whole-resources symlink plus
+# static config symlinks (.editorconfig, dprint.json), never committed to
+# git (their symlink source is an absolute path, portable only within
+# the machine that created it), so every environment links them fresh on
+# every `mise install`, CI runners included: mise-action's tool install
+# fires these hooks on every fresh runner, which is what keeps
+# workspace:dprint:check working there.
+#
+# The third entry is the local-only gate over `setup`: it skips when
+# CI=true, because workflow jobs run their own targeted steps (python
+# checks run python:uv-sync themselves, the docs job has no Python to
+# sync at all) — syncing in CI would be wasted work, and what `setup`
+# does is the providers' decision, not the hook's.
+#
+# Use the array-of-tables form, not a flat array: mise 2026.7.5+
+# silently runs only the last entry of a multi-entry flat postinstall
+# array. A provider repo hosting its providers as project dependencies
+# swaps the middle entry for a venv-provisioned link task (e.g.
+# `uv run --all-packages repolish link`) since it has no uv-toolbox
+# repolish env.

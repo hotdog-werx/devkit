@@ -17,8 +17,8 @@ Three providers, each covering a distinct concern:
 | `hotdogwerx-devkit-releez`    | `devkit.releez`    | `cliff.toml`, `finalize-release.yaml`, `lint-pr-title.yaml`, `validate-release.yaml`               |
 
 A consumer repo picks the providers it needs in its own `repolish.yaml` — a CLI
-tool (`releez`) doesn't need `hotdogwerx-devkit-workspace`'s docs-deploy job any
-more than a docs-only repo needs `hotdogwerx-devkit-releez`.
+tool (`releez`) doesn't need the workspace provider's docs-deploy job any more
+than a docs-only repo needs `hotdogwerx-devkit-releez`.
 
 ## Documentation
 

@@ -12,8 +12,8 @@ from devkit.releez.repolish.provider import ReleezProvider
 from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
 from jinja2 import Environment, StrictUndefined
+from repolish.directives.keep import KeepBlockSpec, KeepPatterns, apply_keep_replacements
 from repolish.misc import ctx_to_dict
-from repolish.preprocessors.keep import KeepBlockSpec, apply_keep_replacements
 from repolish.testing import ProviderTestBed
 
 _START_MARKER = '## start-custom-ci-checks'
@@ -36,7 +36,7 @@ def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
         WorkspaceProvider,
         WorkspaceProviderContext(has_python=True, enable_docs=False),
     )
-    content = bed.render('.github/workflows/ci-checks.yaml.jinja')
+    content = bed.render('.github/workflows/_repolish.ci-checks.yaml.jinja')
 
     # The rendered file must still contain the literal directive + marker
     # text (keep-block substitution is a separate preprocessing pass the
@@ -49,14 +49,16 @@ def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
     local_content = f'  {_START_MARKER}\n  tests:\n    runs-on: ubuntu-latest\n  {_END_MARKER}\n'
     result = apply_keep_replacements(
         content,
-        {
-            'custom-ci-checks': KeepBlockSpec(
-                start=_START_MARKER,
-                end=_END_MARKER,
-            ),
-        },
-        {},
-        {},
+        KeepPatterns(
+            blocks={
+                'custom-ci-checks': KeepBlockSpec(
+                    start=_START_MARKER,
+                    end=_END_MARKER,
+                ),
+            },
+            rest={},
+            header={},
+        ),
         local_content,
     )
     assert 'tests:\n    runs-on: ubuntu-latest' in result
@@ -69,7 +71,7 @@ def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
         (
             WorkspaceProvider,
             WorkspaceProviderContext(enable_docs=True),
-            '.github/workflows/deploy-docs.yaml.jinja',
+            '.github/workflows/_repolish.deploy-docs.yaml.jinja',
             'additional-deploy-jobs',
         ),
         (
@@ -110,9 +112,11 @@ def test_additional_job_keep_blocks_preserve_consumer_jobs(
     local_content = f'  {start_marker}\n  notify:\n    runs-on: ubuntu-latest\n  {end_marker}\n'
     result = apply_keep_replacements(
         content,
-        {tag: KeepBlockSpec(start=start_marker, end=end_marker)},
-        {},
-        {},
+        KeepPatterns(
+            blocks={tag: KeepBlockSpec(start=start_marker, end=end_marker)},
+            rest={},
+            header={},
+        ),
         local_content,
     )
 
@@ -131,13 +135,17 @@ class KeepBlockTemplate:
     tag: str
 
     @property
-    def keep_spec(self) -> dict[str, KeepBlockSpec]:
-        """The keep-block spec, as the CLI builds it from the directive.
+    def keep_spec(self) -> KeepPatterns:
+        """The keep spec, as the CLI builds it from the directive.
 
         Returns:
-            The spec keyed by the keep-block tag.
+            The keep patterns with the block keyed by its tag.
         """
-        return {self.tag: KeepBlockSpec(start=f'## start-{self.tag}', end=f'## end-{self.tag}')}
+        return KeepPatterns(
+            blocks={self.tag: KeepBlockSpec(start=f'## start-{self.tag}', end=f'## end-{self.tag}')},
+            rest={},
+            header={},
+        )
 
     def test_bed(self) -> ProviderTestBed:
         """A test bed for the template's provider.
@@ -162,7 +170,7 @@ class KeepBlockTemplate:
         """
         templates = Path(self.package.__file__ or '').parent / 'resources' / 'templates' / 'repolish'
         template = (templates / self.template_name).read_text(encoding='utf-8')
-        substituted = apply_keep_replacements(template, self.keep_spec, {}, {}, local_content)
+        substituted = apply_keep_replacements(template, self.keep_spec, local_content)
         env = Environment(undefined=StrictUndefined, keep_trailing_newline=True)
         return env.from_string(substituted).render(**ctx_to_dict(self.test_bed().resolved_context))
 
@@ -172,14 +180,14 @@ _KEEP_BLOCK_TEMPLATES = [
         WorkspaceProvider,
         WorkspaceProviderContext(has_python=True),
         devkit.workspace,
-        '.github/workflows/ci-checks.yaml.jinja',
+        '.github/workflows/_repolish.ci-checks.yaml.jinja',
         'custom-ci-checks',
     ),
     KeepBlockTemplate(
         WorkspaceProvider,
         WorkspaceProviderContext(enable_docs=True),
         devkit.workspace,
-        '.github/workflows/deploy-docs.yaml.jinja',
+        '.github/workflows/_repolish.deploy-docs.yaml.jinja',
         'additional-deploy-jobs',
     ),
     *(
@@ -233,6 +241,6 @@ def test_raw_wrapping_leaves_default_output_unchanged(template: KeepBlockTemplat
     rendered = template.render_like_cli('')
     default = template.test_bed().render(template.template_name)
 
-    assert rendered == apply_keep_replacements(default, template.keep_spec, {}, {}, '')
+    assert rendered == apply_keep_replacements(default, template.keep_spec, '')
     assert rendered.endswith(f'  ## end-{template.tag}\n')
     assert 'raw %}' not in rendered

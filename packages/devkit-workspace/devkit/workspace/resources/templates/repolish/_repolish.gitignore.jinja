@@ -1,0 +1,14 @@
+# {{ repolish.generated_header }}
+
+{% for section in facet.sections -%}
+## {{ section.name }}
+{% for entry in section.entries -%}
+{{ entry }}
+{% endfor %}
+{% endfor -%}
+# repolish:keep-rest[project|after-render] marker="## repo-overrides"
+## repo-overrides
+# Everything from this section down is repo-owned: providers only
+# refresh the sections above, so a repo can keep its own ignores here,
+# potentially negating a provider entry (e.g. `!/.editorconfig` after the
+# workspace section ignores `/.editorconfig`).

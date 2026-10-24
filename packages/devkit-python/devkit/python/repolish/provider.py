@@ -1,8 +1,11 @@
+from collections.abc import Sequence
+
 from devkit.python.repolish.models import (
     PythonProviderContext,
     PythonProviderInputs,
 )
-from repolish import Provider, TemplateMapping
+from devkit.workspace.repolish.provider.facets.gitignore import GitignoreInputs
+from repolish import BaseInputs, ProvideInputsOptions, Provider, TemplateMapping
 from typing_extensions import override
 
 
@@ -53,3 +56,35 @@ class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):
             resources/templates/pyproject-fragments/python.toml.
         """
         return {}
+
+    @override
+    def provide_inputs(
+        self,
+        opt: ProvideInputsOptions[PythonProviderContext],
+    ) -> Sequence[BaseInputs]:
+        """Tell the workspace provider which Python artifacts to ignore.
+
+        The workspace gitignore facet collects these entries into the
+        rendered .gitignore head, under this provider's own section (the
+        framework stamps the payload with the sender's identity, so the
+        facet labels the block from the provider alias, not from anything
+        declared here). In a repo without the workspace provider the
+        payload simply routes nowhere.
+        """
+        return [
+            GitignoreInputs(
+                entries=[
+                    '.venv/',
+                    '__pycache__/',
+                    '*.pyc',
+                    '*.egg-info/',
+                    'build/',
+                    'dist/',
+                    '.coverage',
+                    '.coverage.*',
+                    '.coverage-files/',
+                    'htmlcov/',
+                    '.pytest_cache/',
+                ],
+            ),
+        ]

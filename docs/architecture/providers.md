@@ -16,27 +16,30 @@ provider has three jobs:
 A consumer's `repolish.yaml` lists which providers to use and in what order:
 
 ```yaml
+module_links: true
+
 providers:
   workspace:
-    cli: devkit-workspace-link
+    module: devkit.workspace
     context_overrides:
       devkit_ref: &devkit-ref <immutable-tag-or-sha>
   python:
-    cli: devkit-python-link
+    module: devkit.python
   releez:
-    cli: devkit-releez-link
+    module: devkit.releez
     context_overrides:
       devkit_ref: *devkit-ref
 
 providers_order: [workspace, python, releez]
 ```
 
-`cli: devkit-<name>-link` tells repolish to resolve the provider from an
-installed package's console-script entry point (see
-[Adopting Devkit](../adopting-devkit.md) for how that package actually gets
-installed). Devkit's own repo dogfoods its providers differently — via
-`provider_root: ./packages/devkit-<name>/...` pointing directly at the package
-source, since there's nothing to "install" when you _are_ the provider.
+`module: devkit.<name>` tells repolish to resolve the provider from an installed
+package's module (see [Adopting Devkit](../adopting-devkit.md) for how that
+package actually gets installed); `module_links: true` links each one under its
+module name (`.repolish/devkit-<name>/`) instead of the org-prefixed
+distribution name. Devkit's own repo dogfoods the same `module:` form — the
+packages are installed editable into the repolish environment, so linking
+resolves straight back to the package sources in this monorepo.
 
 ## `hotdogwerx-devkit-workspace`
 
@@ -52,9 +55,12 @@ Repo-agnostic concerns any repo benefits from, regardless of language:
 - mise tasks: `workspace:dprint:format`, `workspace:dprint:check`,
   `workspace:actionlint:check`, `workspace:repolish:apply`,
   `workspace:repolish:check`, `workspace:repolish:link`,
-  `workspace:uv-toolbox-lock:check`, `workspace:docs:dev`,
-  `workspace:docs:build`, `workspace:docs:clean`, plus the
-  `workspace:setup-hook`/`workspace:pnpm-install` file-tasks
+  `workspace:uv-toolbox-install`, `workspace:uv-toolbox-lock:check`,
+  `workspace:docs:dev`, `workspace:docs:build`, `workspace:docs:clean`, plus the
+  `workspace:pnpm-install`/`workspace:setup-hook` file-tasks and the `setup`
+  task (the local-only full environment: `setup-hook` gates it out of CI, where
+  workflow jobs run their own targeted steps; the postinstall hooks run the
+  uv-toolbox install, the repolish links, and that gate on every `mise install`)
 
 Context detection: `has_python` comes from the loaded provider set and
 `enable_docs` from `zensical.toml` presence. Repository identity and year come
@@ -93,7 +99,7 @@ Release/publish/changelog automation:
   `__releez_validate-release.yaml`
 - No mise tasks at all — releez itself already handles tag-pulling before a
   release, and `uv build`/`uv publish` need no wrapper (see
-  [Reusable Workflows](../ci/reusable-workflows.md#__releez_publishyaml))
+  [Reusable Workflows](../ci/reusable-workflows.md#__releez_publishyaml-__releez_lint-pr-titleyaml-__releez_validate-releaseyaml))
 
 `use_self_action` defaults to false. Releez itself explicitly sets it to true to
 dogfood its local action; other GitHub Action repositories are therefore not

@@ -9,5 +9,5 @@ Add this provider to your project's `repolish.yaml`:
 ```yaml
 providers:
   workspace:
-    cli: devkit-workspace-link
+    module: devkit.workspace
 ```

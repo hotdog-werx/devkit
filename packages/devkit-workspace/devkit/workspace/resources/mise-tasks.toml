@@ -10,17 +10,26 @@ run = "dprint check"
 ["workspace:actionlint:check"]
 run = "actionlint"
 
+# repolish runs through DK_UVTB_REPOLISH_EXEC: provider repos that host
+# their providers as project dependencies override it to "" (mise's
+# uv_venv_auto puts the venv's repolish on PATH); consumer repos get the
+# default "uv-toolbox exec -e repolish --" from the env defaults.
 ["workspace:repolish:apply"]
-run = "uv-toolbox exec --env repolish -- repolish apply"
+run = '{{ env.DK_UVTB_REPOLISH_EXEC }} repolish apply'
 
 ["workspace:repolish:check"]
-run = "uv-toolbox exec --env repolish -- repolish apply --check"
+run = '{{ env.DK_UVTB_REPOLISH_EXEC }} repolish apply --check'
 
 ["workspace:repolish:link"]
-run = "uv-toolbox exec --env repolish -- repolish link"
+run = '{{ env.DK_UVTB_REPOLISH_EXEC }} repolish link'
 
+["workspace:uv-toolbox-install"]
+run = "uv-toolbox install"
+
+# zensical runs through DK_UVTB_TOOLS_EXEC (the tools env owns it; the
+# env defaults file provides the prefix).
 ["workspace:docs:dev"]
-run = "zensical serve --dev-addr=127.0.0.1:8000 --open"
+run = '{{ env.DK_UVTB_TOOLS_EXEC }} zensical serve --dev-addr=127.0.0.1:8000 --open'
 
 ["workspace:docs:build"]
-run = "zensical build --clean"
+run = '{{ env.DK_UVTB_TOOLS_EXEC }} zensical build --clean'
