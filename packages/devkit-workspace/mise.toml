@@ -1,0 +1,15 @@
+[task_config]
+includes = [
+  ".repolish/*/mise-tasks",
+  ".repolish/*/mise-tasks/*.toml",
+  "mise-tasks",
+  "mise-tasks/*.toml",
+]
+
+[env]
+_.file = [
+  ".repolish/*/mise-tasks/defaults.env",
+]
+
+DK_PROJECT_SOURCE = "devkit/workspace"
+DK_COVERAGE_FAIL_UNDER = "50"

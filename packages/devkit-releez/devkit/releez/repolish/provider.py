@@ -1,11 +1,10 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from devkit.releez.repolish.models import (
     ReleezProviderContext,
     ReleezProviderInputs,
 )
 from repolish import Provider
-from typing_extensions import override
 
 if TYPE_CHECKING:
     from repolish import TemplateMapping

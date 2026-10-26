@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, override
 
 from devkit.workspace.repolish.models import (
     WorkspaceProviderContext,
@@ -8,7 +8,6 @@ from devkit.workspace.repolish.models import (
 from devkit.workspace.repolish.provider._shared import _SharedWorkspaceBehavior
 from devkit.workspace.repolish.provider.facets import GitignoreFacet
 from repolish import Provider, ProviderFacet
-from typing_extensions import override
 
 
 class WorkspaceProvider(
@@ -19,7 +18,9 @@ class WorkspaceProvider(
     root_mode = _SharedWorkspaceBehavior
     standalone_mode = _SharedWorkspaceBehavior
 
-    facets: ClassVar[list[type[ProviderFacet[Any, Any]]] | None] = [GitignoreFacet]
+    facets: ClassVar[list[type[ProviderFacet[Any, Any]]] | None] = [
+        GitignoreFacet,
+    ]
 
     @override
     def create_context(self) -> WorkspaceProviderContext:

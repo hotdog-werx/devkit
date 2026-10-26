@@ -7,6 +7,7 @@ entries import `GitignoreInputs` from this module.
 """
 
 import logging
+from typing import override
 
 from pydantic import BaseModel, Field
 from repolish import (
@@ -17,7 +18,6 @@ from repolish import (
     FacetSpecOptions,
     ProviderFacet,
 )
-from typing_extensions import override
 
 logger = logging.getLogger(__name__)
 

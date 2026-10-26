@@ -1,5 +1,8 @@
 import pytest
-from devkit.workspace.repolish.models import WorkspaceProviderContext
+from devkit.workspace.repolish.models import (
+    WorkspaceProviderContext,
+    WorkspaceProviderInputs,
+)
 from devkit.workspace.repolish.provider import WorkspaceProvider
 from devkit.workspace.repolish.provider._shared import _SharedWorkspaceBehavior
 from repolish import ProviderEntry
@@ -17,9 +20,19 @@ DEPLOY_DOCS = '.github/workflows/deploy-docs.yaml'
 CI_CHECKS_TEMPLATE = '.github/workflows/_repolish.ci-checks.yaml.jinja'
 DEPLOY_DOCS_TEMPLATE = '.github/workflows/_repolish.deploy-docs.yaml.jinja'
 
+# ProviderTestBed is Generic[CtxT, InpT]; the alias pins it to the
+# workspace provider's context/inputs pair so fixtures and test
+# parameters share one concrete annotation (resolved_context, render_all,
+# etc. then resolve against WorkspaceProviderContext instead of an
+# unbound generic).
+WorkspaceBed = ProviderTestBed[
+    WorkspaceProviderContext,
+    WorkspaceProviderInputs,
+]
+
 
 @pytest.fixture
-def bed_no_docs_no_python() -> ProviderTestBed:
+def bed_no_docs_no_python() -> WorkspaceBed:
     """A workspace provider test bed with docs and Python support both disabled."""
     return ProviderTestBed(
         WorkspaceProvider,
@@ -30,7 +43,7 @@ def bed_no_docs_no_python() -> ProviderTestBed:
 
 
 @pytest.fixture
-def bed_docs_and_python() -> ProviderTestBed:
+def bed_docs_and_python() -> WorkspaceBed:
     """A workspace provider test bed with docs and Python support both enabled."""
     return ProviderTestBed(
         WorkspaceProvider,
@@ -68,19 +81,25 @@ def test_finalize_context_preserves_explicit_python_override() -> None:
     assert resolved.has_python is False
 
 
-def test_file_mappings_omit_deploy_docs_when_disabled(bed_no_docs_no_python):
+def test_file_mappings_omit_deploy_docs_when_disabled(
+    bed_no_docs_no_python: WorkspaceBed,
+) -> None:
     """enable_docs=False maps deploy-docs.yaml to None (not rendered)."""
     mappings = bed_no_docs_no_python.file_mappings()
     assert mappings[DEPLOY_DOCS] is None
 
 
-def test_file_mappings_include_deploy_docs_when_enabled(bed_docs_and_python):
+def test_file_mappings_include_deploy_docs_when_enabled(
+    bed_docs_and_python: WorkspaceBed,
+) -> None:
     """enable_docs=True maps deploy-docs.yaml to its conditional template."""
     mappings = bed_docs_and_python.file_mappings()
     assert mappings[DEPLOY_DOCS] == '.github/workflows/_repolish.deploy-docs.yaml'
 
 
-def test_render_all_succeeds_without_docs_or_python(bed_no_docs_no_python):
+def test_render_all_succeeds_without_docs_or_python(
+    bed_no_docs_no_python: WorkspaceBed,
+) -> None:
     """Every mapped/auto-discovered template must render with no Jinja errors."""
     rendered = bed_no_docs_no_python.render_all()
     assert DEPLOY_DOCS not in rendered  # mapped to None, not rendered
@@ -90,7 +109,9 @@ def test_render_all_succeeds_without_docs_or_python(bed_no_docs_no_python):
     'handler_cls',
     [_SharedWorkspaceBehavior],
 )
-def test_editorconfig_and_dprint_json_are_symlinked_not_rendered(handler_cls):
+def test_editorconfig_and_dprint_json_are_symlinked_not_rendered(
+    handler_cls: type[_SharedWorkspaceBehavior],
+) -> None:
     """.editorconfig/dprint.json are symlinked, not rendered.
 
     They're static passthrough config, symlinked via
@@ -115,8 +136,8 @@ def test_editorconfig_and_dprint_json_are_symlinked_not_rendered(handler_cls):
 
 
 def test_ci_checks_omits_python_checks_job_when_has_python_false(
-    bed_no_docs_no_python,
-):
+    bed_no_docs_no_python: WorkspaceBed,
+) -> None:
     """has_python=False renders ci-checks.yaml with no python-checks job."""
     content = bed_no_docs_no_python.render(CI_CHECKS_TEMPLATE)
     assert 'python-checks:' not in content
@@ -124,14 +145,14 @@ def test_ci_checks_omits_python_checks_job_when_has_python_false(
 
 
 def test_ci_checks_includes_python_checks_job_when_has_python_true(
-    bed_docs_and_python,
-):
+    bed_docs_and_python: WorkspaceBed,
+) -> None:
     """has_python=True renders ci-checks.yaml with a python-checks job."""
     content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
     assert 'python-checks:' in content
 
 
-def test_ci_checks_passes_operating_systems_and_codecov_to_python_checks():
+def test_ci_checks_passes_operating_systems_and_codecov_to_python_checks() -> None:
     """python_operating_systems/python_codecov reach the python-checks job's inputs.
 
     Lets a consumer opt into a Windows/macOS matrix and Codecov upload
@@ -153,27 +174,33 @@ def test_ci_checks_passes_operating_systems_and_codecov_to_python_checks():
 
 
 def test_ci_checks_references_single_devkit_ref(
-    bed_docs_and_python,
-):
+    bed_docs_and_python: WorkspaceBed,
+) -> None:
     """All reusable workflows use the same tested Devkit snapshot."""
     content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
     assert '__workspace_repo-checks.yaml@devkit-pin' in content
     assert '__python_python-checks.yaml@devkit-pin' in content
 
 
-def test_enable_docs_passed_through_to_repo_checks_input(bed_docs_and_python):
+def test_enable_docs_passed_through_to_repo_checks_input(
+    bed_docs_and_python: WorkspaceBed,
+) -> None:
     """enable_docs=True passes enable-docs: true to the repo-checks job input."""
     content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
     assert 'enable-docs: true' in content
 
 
-def test_enable_docs_false_passed_through(bed_no_docs_no_python):
+def test_enable_docs_false_passed_through(
+    bed_no_docs_no_python: WorkspaceBed,
+) -> None:
     """enable_docs=False passes enable-docs: false to the repo-checks job input."""
     content = bed_no_docs_no_python.render(CI_CHECKS_TEMPLATE)
     assert 'enable-docs: false' in content
 
 
-def test_deploy_docs_references_devkit_ref(bed_docs_and_python):
+def test_deploy_docs_references_devkit_ref(
+    bed_docs_and_python: WorkspaceBed,
+) -> None:
     """deploy-docs.yaml pins the reusable workflow to devkit_ref."""
     content = bed_docs_and_python.render(DEPLOY_DOCS_TEMPLATE)
     assert '__workspace_deploy-docs.yaml@devkit-pin' in content

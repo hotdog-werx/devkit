@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from typing import override
 
 from devkit.python.repolish.models import (
     PythonProviderContext,
@@ -6,7 +7,6 @@ from devkit.python.repolish.models import (
 )
 from devkit.workspace.repolish.provider.facets.gitignore import GitignoreInputs
 from repolish import BaseInputs, ProvideInputsOptions, Provider, TemplateMapping
-from typing_extensions import override
 
 
 class PythonProvider(Provider[PythonProviderContext, PythonProviderInputs]):

@@ -132,7 +132,9 @@ class TestGitignoreFacet:
         assert isinstance(ctx, GitignoreFacetContext)
         assert ctx.sections == []
 
-    def test_finalize_merges_received_entries_into_sender_sections(self) -> None:
+    def test_finalize_merges_received_entries_into_sender_sections(
+        self,
+    ) -> None:
         """Received payloads merge under their sender's section, deduplicated."""
         facet = GitignoreFacet()
         opt = FacetFinalizeOptions(

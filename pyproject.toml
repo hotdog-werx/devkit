@@ -1,17 +1,18 @@
-[project]
-name = "devkit"
-version = "0.0.0"
-description = "Shared repolish providers, mise tasks, and CI workflows for hotdog-werx repos"
-readme = "README.md"
-license = "MIT"
-requires-python = ">=3.11"
-dependencies = []
-
 [tool.uv]
 package = false
 
 [tool.uv.workspace]
 members = ["packages/*"]
+
+[dependency-groups]
+dev = [
+  #   "repolish @ git+https://github.com/hotdog-werx/repolish@topic/whatever",
+  "repolish >= 1.18.1",
+  "pytest >= 9.0.2",
+  "pytest-mock >= 3.14.1",
+  "pytest-cov >= 6.2.1",
+  "ty >= 0.0.16",
+]
 
 # Local repolish override toggle for unreleased feature testing.
 # Uncomment both lines below to use local repolish, then re-lock/sync.
@@ -38,19 +39,6 @@ post-changelog = [
     "workspace:dprint:format",
     "{changelog}",
   ],
-]
-
-[dependency-groups]
-dev = [
-  # repolish resolves from PyPI via the member packages' >=1.17.0,<2 dep.
-  # To dogfood unreleased repolish, add a direct URL requirement here
-  # (never a [tool.uv.sources] override — see the note above), then
-  # re-lock/sync:
-  #   "repolish @ git+https://github.com/hotdog-werx/repolish@topic/whatever",
-  "pytest >= 9.0.2",
-  "pytest-mock >= 3.14.1",
-  "pytest-cov >= 6.2.1",
-  "ty >= 0.0.16",
 ]
 
 # devkit dogfoods devkit-python locally (provider_root:, not an installed

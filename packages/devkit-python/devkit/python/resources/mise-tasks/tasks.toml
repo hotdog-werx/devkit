@@ -1,0 +1,20 @@
+["python:check:ruff"]
+description = "Run ruff to check Python code for linting issues."
+usage = '''
+arg "[target]" var=#true default="." help="Files to check"
+'''
+run = [
+  "{{ env.DK_UVTB_TOOLS_EXEC }} ruff check --force-exclude --config {{ env.DK_RUFF_CONFIG }} ${usage_target}",
+  "{{ env.DK_UVTB_TOOLS_EXEC }} ruff format --force-exclude --config {{ env.DK_RUFF_CONFIG }} --check ${usage_target}",
+]
+
+["python:check:complexity"]
+description = "Run complexipy to check Python code for complexity issues."
+usage = '''
+arg "[target]" var=#true default="." help="Files to check"
+'''
+run = '''
+{{ env.DK_UVTB_TOOLS_EXEC }} complexipy \
+  --max-complexity-allowed {{ env.DK_COMPLEXIPY_MAX_COMPLEXITY }} \
+  ${usage_target}
+'''
