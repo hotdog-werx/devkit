@@ -38,7 +38,9 @@ def test_finalize_release_uses_self_action_when_enabled():
 
 def test_release_project_comes_from_finalize_output():
     """The publish workflow uses the project detected by Releez finalize."""
-    publish = (REUSABLE_WORKFLOW_DIR / '__releez_publish.yaml').read_text(encoding='utf-8')
+    publish = (REUSABLE_WORKFLOW_DIR / '__releez_publish.yaml').read_text(
+        encoding='utf-8',
+    )
     validate = (REUSABLE_WORKFLOW_DIR / '__releez_validate-release.yaml').read_text(encoding='utf-8')
 
     expected = 'PROJECT: ${{ steps.releez-published.outputs.project || steps.releez-self.outputs.project }}'

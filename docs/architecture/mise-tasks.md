@@ -129,9 +129,9 @@ rare repo where auto-detection isn't right:
 
 - `check-coverage` auto-detects `--cov=<target>` from
   `[tool.uv.build-backend] module-name` in `pyproject.toml`, falling back to
-  `src`. Override with `PYTEST_COV_TARGET` in `mise.toml`'s `[env]` — needed for
-  devkit's own repo, a bare uv workspace container with no single `module-name`
-  to detect (`PYTEST_COV_TARGET = "devkit"`).
+  `src`. Override with `DK_PYTEST_COV_TARGET` in `mise.toml`'s `[env]` — needed
+  for devkit's own repo, a bare uv workspace container with no single
+  `module-name` to detect (`DK_PYTEST_COV_TARGET = "devkit"`).
 - `check-complexity` defaults its `complexipy -mx` threshold to `10`. Override
   with `COMPLEXIPY_THRESHOLD`.
 

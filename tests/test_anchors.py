@@ -12,7 +12,11 @@ from devkit.releez.repolish.provider import ReleezProvider
 from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
 from jinja2 import Environment, StrictUndefined
-from repolish.directives.keep import KeepBlockSpec, KeepPatterns, apply_keep_replacements
+from repolish.directives.keep import (
+    KeepBlockSpec,
+    KeepPatterns,
+    apply_keep_replacements,
+)
 from repolish.misc import ctx_to_dict
 from repolish.testing import ProviderTestBed
 
@@ -42,7 +46,7 @@ def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
     # text (keep-block substitution is a separate preprocessing pass the
     # CLI runs before Jinja in the real pipeline; ProviderTestBed only does
     # the Jinja pass).
-    assert 'repolish-keep-block[custom-ci-checks]' in content
+    assert 'repolish:keep-block[custom-ci-checks]' in content
     assert f'  {_START_MARKER}' in content
     assert f'  {_END_MARKER}' in content
 
@@ -62,7 +66,7 @@ def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
         local_content,
     )
     assert 'tests:\n    runs-on: ubuntu-latest' in result
-    assert 'repolish-keep-block' not in result
+    assert 'repolish:keep-block' not in result
 
 
 @pytest.mark.parametrize(
@@ -105,7 +109,7 @@ def test_additional_job_keep_blocks_preserve_consumer_jobs(
     start_marker = f'## start-{tag}'
     end_marker = f'## end-{tag}'
 
-    assert f'repolish-keep-block[{tag}]' in content
+    assert f'repolish:keep-block[{tag}]' in content
     assert f'  {start_marker}' in content
     assert f'  {end_marker}' in content
 
@@ -121,7 +125,7 @@ def test_additional_job_keep_blocks_preserve_consumer_jobs(
     )
 
     assert 'notify:\n    runs-on: ubuntu-latest' in result
-    assert f'repolish-keep-block[{tag}]' not in result
+    assert f'repolish:keep-block[{tag}]' not in result
 
 
 @dataclass(frozen=True)
@@ -142,7 +146,12 @@ class KeepBlockTemplate:
             The keep patterns with the block keyed by its tag.
         """
         return KeepPatterns(
-            blocks={self.tag: KeepBlockSpec(start=f'## start-{self.tag}', end=f'## end-{self.tag}')},
+            blocks={
+                self.tag: KeepBlockSpec(
+                    start=f'## start-{self.tag}',
+                    end=f'## end-{self.tag}',
+                ),
+            },
             rest={},
             header={},
         )
@@ -170,9 +179,15 @@ class KeepBlockTemplate:
         """
         templates = Path(self.package.__file__ or '').parent / 'resources' / 'templates' / 'repolish'
         template = (templates / self.template_name).read_text(encoding='utf-8')
-        substituted = apply_keep_replacements(template, self.keep_spec, local_content)
+        substituted = apply_keep_replacements(
+            template,
+            self.keep_spec,
+            local_content,
+        )
         env = Environment(undefined=StrictUndefined, keep_trailing_newline=True)
-        return env.from_string(substituted).render(**ctx_to_dict(self.test_bed().resolved_context))
+        return env.from_string(substituted).render(
+            **ctx_to_dict(self.test_bed().resolved_context),
+        )
 
 
 _KEEP_BLOCK_TEMPLATES = [
@@ -236,7 +251,9 @@ def test_keep_block_content_with_github_actions_expressions_is_preserved_verbati
 
 
 @pytest.mark.parametrize('template', _KEEP_BLOCK_TEMPLATES, ids=_template_id)
-def test_raw_wrapping_leaves_default_output_unchanged(template: KeepBlockTemplate) -> None:
+def test_raw_wrapping_leaves_default_output_unchanged(
+    template: KeepBlockTemplate,
+) -> None:
     """With no local content, the output matches the Jinja-first render of the template default."""
     rendered = template.render_like_cli('')
     default = template.test_bed().render(template.template_name)

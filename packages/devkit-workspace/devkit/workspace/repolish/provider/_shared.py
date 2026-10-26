@@ -73,7 +73,12 @@ class _SharedWorkspaceBehavior(
             updates['has_python'] = any(
                 entry.alias == 'python'
                 or (entry.inst_type is not None and entry.inst_type.__module__.startswith('devkit.python.'))
-                or (entry.context_type is not None and entry.context_type.__module__.startswith('devkit.python.'))
+                or (
+                    entry.context_type is not None
+                    and entry.context_type.__module__.startswith(
+                        'devkit.python.',
+                    )
+                )
                 for entry in opt.all_providers
             )
 

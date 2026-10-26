@@ -35,7 +35,7 @@ def test_managed_workflow_templates_share_generated_header() -> None:
     workflow_templates = list(
         packages_dir.glob(
             'devkit-*/devkit/*/resources/templates/repolish/.github/workflows/*.jinja',
-        )
+        ),
     )
 
     assert len(workflow_templates) == 5
