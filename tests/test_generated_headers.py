@@ -13,8 +13,8 @@ from repolish.testing import make_context
     ],
 )
 def test_generated_header_uses_provider_metadata(
-    member_name,
-    expected_slug,
+    member_name: str,
+    expected_slug: str | None,
 ) -> None:
     """The standard header identifies the provider version and optional workspace member."""
     repolish_context = make_context(

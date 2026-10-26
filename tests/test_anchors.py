@@ -12,6 +12,7 @@ from devkit.releez.repolish.provider import ReleezProvider
 from devkit.workspace.repolish.models import WorkspaceProviderContext
 from devkit.workspace.repolish.provider import WorkspaceProvider
 from jinja2 import Environment, StrictUndefined
+from repolish import Provider
 from repolish.directives.keep import (
     KeepBlockSpec,
     KeepPatterns,
@@ -99,10 +100,10 @@ def test_workspace_ci_checks_keep_block_preserves_local_custom_jobs():
     ],
 )
 def test_additional_job_keep_blocks_preserve_consumer_jobs(
-    provider_type,
-    context,
-    template_name,
-    tag,
+    provider_type: type[Provider],
+    context: ReleezProviderContext,
+    template_name: str,
+    tag: str,
 ):
     """Consumer-owned additional jobs survive re-rendering in every workflow."""
     content = ProviderTestBed(provider_type, context).render(template_name)
@@ -184,7 +185,11 @@ class KeepBlockTemplate:
             self.keep_spec,
             local_content,
         )
-        env = Environment(undefined=StrictUndefined, keep_trailing_newline=True)
+        env = Environment(
+            undefined=StrictUndefined,
+            keep_trailing_newline=True,
+            autoescape=True,
+        )
         return env.from_string(substituted).render(
             **ctx_to_dict(self.test_bed().resolved_context),
         )

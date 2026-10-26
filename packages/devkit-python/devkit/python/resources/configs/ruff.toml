@@ -1,7 +1,15 @@
-lint.external = ["CCR", "DAR", "DOC", "WPS"]
+line-length = 119
+target-version = "py312"
 
-lint.select = ["ALL"]
-lint.ignore = [
+[format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[lint]
+external = ["CCR", "DAR", "DOC", "WPS"]
+select = ["ALL"]
+ignore = [
   "COM812", # Conflicts with the formatter; python:format applies it explicitly via --extend-select on the fix-only pass instead
   "D100", # No docstrings for modules
   "D104", # No docstrings for packages
@@ -17,17 +25,9 @@ lint.ignore = [
 # cp1252 on Windows, which garbles UTF-8 configs, templates and lockfiles. It's
 # a preview rule; explicit-preview-rules opts in only to preview rules named
 # here, so `select = ["ALL"]` doesn't pull in every other preview rule too.
-lint.preview = true
-lint.explicit-preview-rules = true
-lint.extend-select = ["PLW1514"]
-
-line-length = 119
-target-version = "py311"
-
-[format]
-quote-style = "single"
-indent-style = "space"
-skip-magic-trailing-comma = false
+preview = true
+explicit-preview-rules = true
+extend-select = ["PLW1514"]
 
 [lint.flake8-annotations]
 allow-star-arg-any = true
@@ -53,3 +53,15 @@ max-complexity = 7
 
 [lint.pydocstyle]
 convention = "google"
+
+[lint.extend-per-file-ignores]
+"/*/tests/*.py" = [
+  "ANN201", # no return type
+  "ARG001", # unused arguments
+  "D101", # Missing docstring in public class
+  "D102", # Missing docstring in public method
+  "D103", # Missing docstring in public function
+  "S101", # Allow assert statements in tests
+]
+"/*/templates/repolish.py" = ["INP001"]
+"/*/repolish/provider/**.py" = ["ARG002"]

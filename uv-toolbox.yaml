@@ -7,6 +7,6 @@ environments:
   - name: tools
     dependencies:
       - ruff==0.15.20
-      - complexipy==6.0.1
-      - zensical==0.0.47
+      - complexipy==8.2.0
+      - zensical==0.0.72
       - releez==1.0.1

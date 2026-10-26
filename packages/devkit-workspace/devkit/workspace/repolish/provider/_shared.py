@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from typing import override
 
 from devkit.workspace.repolish.models import (
     WorkspaceProviderContext,
@@ -13,7 +14,6 @@ from repolish import (
     Symlink,
     TemplateMapping,
 )
-from typing_extensions import override
 
 
 class _SharedWorkspaceBehavior(
