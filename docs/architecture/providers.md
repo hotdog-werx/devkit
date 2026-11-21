@@ -82,10 +82,13 @@ Python dev tooling — ruff, ty, complexipy, pydoclint, pytest/coverage:
   and `python:uv-sync`, all referenced in place
 
 The workspace provider uses the shared `devkit_ref` when it composes both the
-repository and optional Python reusable-workflow jobs. The Python provider needs
-no workflow ref or cross-provider input of its own. Other Python tooling has no
-per-repo template variables because `check-coverage`/`check-complexity` detect
-their targets at runtime (see
+repository and optional Python reusable-workflow jobs. Devkit itself sets
+`devkit_local_workflows: true` on the workspace and releez providers, which
+renders `uses: ./.github/workflows/<name>` with no ref, so a devkit PR runs its
+own reusable-workflow changes instead of whatever `devkit_ref` points at. The
+Python provider needs no workflow ref or cross-provider input of its own. Other
+Python tooling has no per-repo template variables because
+`check-coverage`/`check-complexity` detect their targets at runtime (see
 [Mise Tasks](./mise-tasks.md#runtime-detection-over-render-time-templating)).
 
 ## `hotdogwerx-devkit-releez`

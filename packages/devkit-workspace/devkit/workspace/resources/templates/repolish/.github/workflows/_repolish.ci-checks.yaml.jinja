@@ -9,18 +9,40 @@ on:
 
 jobs:
   repo-checks:
-    uses: hotdog-werx/devkit/.github/workflows/__workspace_repo-checks.yaml@{{ devkit_ref }}
+    uses: {{ devkit_workflow_prefix }}__workspace_repo-checks.yaml{{ devkit_workflow_suffix }}
     with:
       enable-docs: {{ enable_docs | lower }}
 {% if has_python %}
   python-checks:
-    uses: hotdog-werx/devkit/.github/workflows/__python_python-checks.yaml@{{ devkit_ref }}
+    uses: {{ devkit_workflow_prefix }}__python_python-checks.yaml{{ devkit_workflow_suffix }}
     with:
       operating-systems: '{{ python_operating_systems | tojson }}'
       codecov: {{ python_codecov | lower }}
+{%- if python_mustard %}
+      mustard: true
+{%- endif %}
     secrets:
       CODECOV_TOKEN: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}
-{% endif %}{% raw %}
+{% if python_mustard %}
+  # Mustard's report job publishes checks, comments, signed baselines, and the
+  # badge, so it runs here with its own permissions. A reusable workflow job
+  # requesting them would fail every caller that does not grant them.
+  coverage:
+    needs: [python-checks]
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+      checks: write
+      pull-requests: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: hotdog-werx/mustard@e9c320bfef82780bb473edc8c1a9bc6e40324360 # 0.1.0
+        with:
+          fail-ci: 'true'
+{% endif %}{% endif %}{% raw %}
 ## repolish:keep-block[custom-ci-checks]: start="## start-custom-ci-checks" end="## end-custom-ci-checks"
   ## start-custom-ci-checks
   ## Add custom jobs here (e.g. a tests/test-action pair). Content between

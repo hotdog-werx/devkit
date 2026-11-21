@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   lint-pr-title:
-    uses: hotdog-werx/devkit/.github/workflows/__releez_lint-pr-title.yaml@{{ devkit_ref }}
+    uses: {{ devkit_workflow_prefix }}__releez_lint-pr-title.yaml{{ devkit_workflow_suffix }}
     with:
       use-self-action: {{ use_self_action | lower }}
 {% raw %}

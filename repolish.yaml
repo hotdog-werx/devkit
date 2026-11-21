@@ -4,20 +4,24 @@ providers:
   workspace:
     module: devkit.workspace
     context_overrides:
-      # devkit hasn't cut a tagged release yet, and this content isn't on
-      # master either — self-render against the branch actually being
-      # worked on, or devkit's own rendered workflows reference reusable
-      # workflows that don't exist yet at the ref they point to.
+      # devkit calls its own reusable workflows from the same commit
+      # (`uses: ./.github/workflows/...`), so a PR tests its own workflow
+      # changes rather than whatever master or v0 point at.
+      devkit_local_workflows: &devkit-local true
       devkit_ref: &devkit-ref master
       # Preserves the OS matrix the old codeguide/pkglink-based config
       # (ci_operating_systems) already ran before this migration.
       python_operating_systems: [ubuntu-latest, windows-latest]
+      # Coverage checks and PR comments come from Mustard. Policy lives in
+      # .github/mustard.yml.
+      python_mustard: true
   python:
     module: devkit.python
   releez:
     module: devkit.releez
     context_overrides:
       devkit_ref: *devkit-ref
+      devkit_local_workflows: *devkit-local
       # Devkit releases/tags its three Releez projects independently, but the
       # provider packages are installed directly from those Git refs rather
       # than published to PyPI.

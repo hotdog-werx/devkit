@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   publish:
-    uses: hotdog-werx/devkit/.github/workflows/__releez_publish.yaml@master
+    uses: ./.github/workflows/__releez_publish.yaml
     with:
       use-self-action: false
       publish-package: false
