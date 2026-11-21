@@ -1,3 +1,21 @@
+## [0.2.0] - 2026-11-21
+
+### 🚀 Features
+
+- Gitignore facet and cross-provider inputs on the workspace provider (#15) by
+  [@jmlopez-rod](https://github.com/jmlopez-rod) in
+  [#15](https://github.com/hotdog-werx/devkit/pull/15)
+
+- Add Mustard coverage option and self-test devkit workflows (#17) by
+  [@jamestrousdale](https://github.com/jamestrousdale) in
+  [#17](https://github.com/hotdog-werx/devkit/pull/17)
+
+### 🚜 Refactor
+
+- File-based mise tasks and provider cleanup (#16) by
+  [@jmlopez-rod](https://github.com/jmlopez-rod) in
+  [#16](https://github.com/hotdog-werx/devkit/pull/16)
+
 ## [0.1.4] - 2026-10-13
 
 ### 🐛 Bug Fixes
