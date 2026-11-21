@@ -2,9 +2,7 @@ monorepo_root = true
 
 [monorepo]
 lockfile = true
-config_roots = [
-  "packages/*",
-]
+config_roots = ["packages/*"]
 
 [settings]
 experimental = true
@@ -15,10 +13,7 @@ uv-toolbox = "https://github.com/hotdog-werx/uv-toolbox"
 
 [env]
 _.uv-toolbox = { tools = true }
-_.file = [
-  ".repolish/*/mise-tasks/defaults.env",
-  "mise-tasks/mise.env",
-]
+_.file = [".repolish/*/mise-tasks/defaults.env", "mise-tasks/mise.env"]
 
 [task_config]
 includes = [
@@ -55,4 +50,4 @@ shellcheck = "0.11.0"
 
 "pipx:uv-toolbox" = "0.4.1"
 "pipx:pydoclint" = "0.9.1"
-"pipx:releez" = "1.1.1"
+"pipx:releez" = "1.1.2"
