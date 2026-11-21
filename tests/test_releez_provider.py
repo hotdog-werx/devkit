@@ -153,3 +153,20 @@ def test_cliff_toml_is_valid_toml_and_preserves_tera_syntax():
     # Tera syntax must remain literal, not be interpreted as Jinja:
     assert '{{ version | trim_start_matches' in parsed['changelog']['body']
     assert '{% if commit.scope %}' in parsed['changelog']['body']
+
+
+def test_local_workflows_call_releez_reusable_workflows_from_the_same_commit():
+    """devkit_local_workflows renders same-commit `./` references with no ref."""
+    bed = ProviderTestBed(
+        ReleezProvider,
+        ReleezProviderContext(devkit_ref='devkit-pin', devkit_local_workflows=True),
+    )
+    for template, workflow in [
+        (FINALIZE_RELEASE_TEMPLATE, '__releez_publish.yaml'),
+        (LINT_PR_TITLE_TEMPLATE, '__releez_lint-pr-title.yaml'),
+        (VALIDATE_RELEASE_TEMPLATE, '__releez_validate-release.yaml'),
+    ]:
+        content = bed.render(template)
+        assert f'uses: ./.github/workflows/{workflow}\n' in content
+        assert 'hotdog-werx/devkit/' not in content
+        assert 'devkit-pin' not in content

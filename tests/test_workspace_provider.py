@@ -204,3 +204,66 @@ def test_deploy_docs_references_devkit_ref(
     """deploy-docs.yaml pins the reusable workflow to devkit_ref."""
     content = bed_docs_and_python.render(DEPLOY_DOCS_TEMPLATE)
     assert '__workspace_deploy-docs.yaml@devkit-pin' in content
+
+
+def test_ci_checks_adds_mustard_upload_and_report_job() -> None:
+    """python_mustard uploads per OS in python-checks and reports in the caller.
+
+    The report job needs checks/pull-requests/id-token/attestations write
+    access, so it must live in the calling workflow rather than the shared
+    reusable workflow, where requesting those permissions would break every
+    caller that does not grant them.
+    """
+    bed = ProviderTestBed(
+        WorkspaceProvider,
+        WorkspaceProviderContext(
+            has_python=True,
+            python_operating_systems=['ubuntu-latest', 'windows-latest'],
+            python_mustard=True,
+        ),
+    )
+    content = bed.render(CI_CHECKS_TEMPLATE)
+    assert 'mustard: true' in content
+    assert 'codecov: false' in content
+    assert '  coverage:\n    needs: [python-checks]' in content
+    assert 'checks: write' in content
+    assert 'attestations: write' in content
+    assert "fail-ci: 'true'" in content
+    assert 'uses: hotdog-werx/mustard@' in content
+
+
+def test_ci_checks_omits_mustard_report_job_by_default(
+    bed_docs_and_python: WorkspaceBed,
+) -> None:
+    """Without python_mustard there is no input, report job, or extra permissions.
+
+    Omitting the input entirely (rather than passing false) keeps a rendered
+    workflow valid against an older python-checks ref that predates it.
+    """
+    content = bed_docs_and_python.render(CI_CHECKS_TEMPLATE)
+    assert 'mustard:' not in content
+    assert 'coverage:' not in content
+    assert 'checks: write' not in content
+
+
+def test_local_workflows_call_reusable_workflows_from_the_same_commit() -> None:
+    """devkit_local_workflows renders same-commit `./` references with no ref.
+
+    devkit's own CI uses this so a PR exercises its own reusable-workflow
+    changes instead of whatever devkit_ref (master or v0) points at.
+    """
+    bed = ProviderTestBed(
+        WorkspaceProvider,
+        WorkspaceProviderContext(
+            has_python=True,
+            devkit_ref='devkit-pin',
+            devkit_local_workflows=True,
+        ),
+    )
+    ci = bed.render(CI_CHECKS_TEMPLATE)
+    docs = bed.render(DEPLOY_DOCS_TEMPLATE)
+    assert 'uses: ./.github/workflows/__workspace_repo-checks.yaml\n' in ci
+    assert 'uses: ./.github/workflows/__python_python-checks.yaml\n' in ci
+    assert 'uses: ./.github/workflows/__workspace_deploy-docs.yaml\n' in docs
+    assert 'hotdog-werx/devkit/' not in ci + docs
+    assert 'devkit-pin' not in ci + docs

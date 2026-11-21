@@ -28,7 +28,7 @@ Split into two jobs:
   docstrings). Always runs once on `ubuntu-latest` — lint checks are
   OS-independent, so matrixing them would just waste CI minutes.
 - **`test`** — `check-coverage`, matrixed across `operating-systems`, with an
-  optional Codecov upload.
+  optional Codecov or Mustard upload.
 
 ```yaml
 inputs:
@@ -38,6 +38,10 @@ inputs:
     default: '["ubuntu-latest"]'
   codecov:
     description: 'Whether to generate a coverage XML report and upload to Codecov'
+    type: boolean
+    default: false
+  mustard:
+    description: 'Whether to upload a per-OS coverage XML report to Mustard'
     type: boolean
     default: false
 secrets:
@@ -53,6 +57,24 @@ providers:
     context_overrides:
       python_operating_systems: [ubuntu-latest, windows-latest]
       python_codecov: true
+```
+
+To use [Mustard](https://github.com/hotdog-werx/mustard) instead of Codecov, set
+`python_mustard: true`. Each OS uploads `coverage-<OS>.xml` with a per-OS shard,
+and the generated `ci-checks.yaml` adds a `coverage` job that combines the
+uploads and publishes the `mustard/project` and `mustard/patch` checks, the PR
+comment, and the badge. That job runs in the calling workflow because it needs
+`checks`, `pull-requests`, `id-token`, and `attestations` write access, and a
+reusable workflow job that requests permissions fails every caller that does not
+grant them. It sets `fail-ci`, so a failed coverage check fails the job.
+Configure targets in the repository's `.github/mustard.yml`.
+
+```yaml
+providers:
+  workspace:
+    context_overrides:
+      python_operating_systems: [ubuntu-latest, windows-latest]
+      python_mustard: true
 ```
 
 This absorbed what used to be releez's own hand-maintained `tests` job (a

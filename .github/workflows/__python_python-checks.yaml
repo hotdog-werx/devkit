@@ -13,6 +13,11 @@ on:
         required: false
         type: boolean
         default: false
+      mustard:
+        description: 'Whether to upload a per-OS coverage XML report to Mustard. The calling workflow runs the Mustard report job, which needs permissions this reusable workflow must not request.'
+        required: false
+        type: boolean
+        default: false
     secrets:
       CODECOV_TOKEN:
         required: false
@@ -69,7 +74,7 @@ jobs:
       - name: check-coverage
         run: mise run python:check:coverage
       - name: generate-coverage-xml
-        if: inputs.codecov && always() && !cancelled()
+        if: (inputs.codecov || inputs.mustard) && always() && !cancelled()
         run: uv run coverage xml -o coverage-${{ runner.os }}.xml
       - name: upload-coverage-to-codecov
         if: inputs.codecov && always() && !cancelled()
@@ -81,3 +86,10 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
+      - name: upload-coverage-to-mustard
+        if: inputs.mustard && always() && !cancelled() && hashFiles(format('coverage-{0}.xml', runner.os)) != ''
+        uses: hotdog-werx/mustard@e9c320bfef82780bb473edc8c1a9bc6e40324360 # 0.1.0
+        with:
+          mode: upload
+          files: coverage-${{ runner.os }}.xml
+          shard: ${{ runner.os }}
