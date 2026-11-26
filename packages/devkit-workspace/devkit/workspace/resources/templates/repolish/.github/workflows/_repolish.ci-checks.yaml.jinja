@@ -20,6 +20,9 @@ jobs:
       codecov: {{ python_codecov | lower }}
 {%- if python_mustard %}
       mustard: true
+{%- if python_mustard_flag %}
+      mustard-flag: {{ python_mustard_flag }}
+{%- endif %}
 {%- endif %}
     secrets:
       CODECOV_TOKEN: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}

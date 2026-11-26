@@ -232,6 +232,34 @@ def test_ci_checks_adds_mustard_upload_and_report_job() -> None:
     assert 'uses: hotdog-werx/mustard@' in content
 
 
+def test_ci_checks_passes_mustard_flag_when_set() -> None:
+    """python_mustard_flag passes mustard-flag to python-checks."""
+    bed = ProviderTestBed(
+        WorkspaceProvider,
+        WorkspaceProviderContext(
+            has_python=True,
+            python_mustard=True,
+            python_mustard_flag='python',
+        ),
+    )
+    content = bed.render(CI_CHECKS_TEMPLATE)
+    assert '      mustard: true\n      mustard-flag: python\n' in content
+
+
+def test_ci_checks_omits_mustard_flag_by_default() -> None:
+    """An empty python_mustard_flag omits the input, so Mustard uses `default`.
+
+    Omitting it keeps a rendered workflow valid against an older python-checks
+    ref that predates the input.
+    """
+    bed = ProviderTestBed(
+        WorkspaceProvider,
+        WorkspaceProviderContext(has_python=True, python_mustard=True),
+    )
+    content = bed.render(CI_CHECKS_TEMPLATE)
+    assert 'mustard-flag:' not in content
+
+
 def test_ci_checks_omits_mustard_report_job_by_default(
     bed_docs_and_python: WorkspaceBed,
 ) -> None:
