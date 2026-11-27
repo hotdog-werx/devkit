@@ -18,6 +18,11 @@ on:
         required: false
         type: boolean
         default: false
+      mustard-flag:
+        description: 'Mustard coverage flag for the Python upload. Leave empty for the Mustard `default` flag. Set it (for example `python`) when the caller combines several suites in one Mustard report.'
+        required: false
+        type: string
+        default: ''
     secrets:
       CODECOV_TOKEN:
         required: false
@@ -93,3 +98,4 @@ jobs:
           mode: upload
           files: coverage-${{ runner.os }}.xml
           shard: ${{ runner.os }}
+          flag: ${{ inputs.mustard-flag }}

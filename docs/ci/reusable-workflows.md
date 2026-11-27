@@ -44,6 +44,10 @@ inputs:
     description: 'Whether to upload a per-OS coverage XML report to Mustard'
     type: boolean
     default: false
+  mustard-flag:
+    description: 'Mustard coverage flag for the Python upload'
+    type: string
+    default: ''
 secrets:
   CODECOV_TOKEN:
     required: false
@@ -75,6 +79,24 @@ providers:
     context_overrides:
       python_operating_systems: [ubuntu-latest, windows-latest]
       python_mustard: true
+```
+
+The Python upload uses Mustard's `default` flag unless you set
+`python_mustard_flag` (the `mustard-flag` input). Set it when the repository
+combines several suites in one Mustard report, such as Python and a C++ upload
+with `flag: cpp`. Upload each suite with its own flag into the same namespace.
+Then run one Mustard report job that `needs` every producer job and uses
+`if: always() && !cancelled()`. List each suite under `flags:` in
+`.github/mustard.yml` with `required: true`. A missing upload then makes global
+coverage incomplete instead of silently dropping that suite. The `required` flag
+setting needs a Mustard release that supports it.
+
+```yaml
+providers:
+  workspace:
+    context_overrides:
+      python_mustard: true
+      python_mustard_flag: python
 ```
 
 This absorbed what used to be releez's own hand-maintained `tests` job (a

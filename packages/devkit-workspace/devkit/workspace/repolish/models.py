@@ -14,6 +14,8 @@ class WorkspaceProviderContext(BaseContext):
     )
     python_codecov: bool = False
     python_mustard: bool = False
+    # Mustard flag for the Python upload. Empty keeps Mustard's `default` flag.
+    python_mustard_flag: str = ''
 
     # devkit's own repository calls its reusable workflows from the same
     # commit (`uses: ./.github/workflows/...`) so a PR tests its own workflow
