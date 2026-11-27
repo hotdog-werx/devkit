@@ -1,3 +1,11 @@
+## [0.3.0] - 2026-11-27
+
+### 🚀 Features
+
+- Add a Mustard flag input for the Python upload (#20) by
+  [@jamestrousdale](https://github.com/jamestrousdale) in
+  [#20](https://github.com/hotdog-werx/devkit/pull/20)
+
 ## [0.2.0] - 2026-11-21
 
 ### 🚀 Features
